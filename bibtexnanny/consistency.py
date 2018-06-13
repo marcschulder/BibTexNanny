@@ -8,6 +8,7 @@ __author__ = 'Marc Schulder'
 
 import sys
 import os
+import re
 import argparse
 import biblib.bib
 
@@ -64,6 +65,7 @@ def getEnumerationString(items, quotes=None):
 
 
 def checkConsistency(entries):
+    # Check for Duplicates #
     # Duplicate keys
     duplicateKeys = findDuplicateKeys(entries)
     if duplicateKeys:
@@ -77,7 +79,8 @@ def checkConsistency(entries):
         print(HEADLINE_PATTERN.format("Duplicate Keys"))
         for duplicateTitle, keys in duplicateTitles.items():
             keysString = getEnumerationString(keys)
-            print("Entries {} have the same title: {}".format(keysString, duplicateTitle))
+            firstTitle = entries[keys[0]]['title']
+            print("Entries {} have the same title: {}".format(keysString, firstTitle))
 
 
 def findDuplicateKeys(entries):
@@ -92,13 +95,16 @@ def findDuplicateKeys(entries):
     return set()
 
 
-def findDuplicateTitles(entries):
+def findDuplicateTitles(entries, ignoreCurlyBrackets=True, ignoreCaps=True):
     seen = {}
     for key, entry in entries.items():
-        # print(key)
-        # print(entry["title"])
-        # break
         title = entry["title"]
+        if ignoreCurlyBrackets:
+            title = title.replace('{', '')
+            title = title.replace('}', '')
+        if ignoreCaps:
+            title = title.lower()
+
         seen.setdefault(title, []).append(key)
 
     duplicates = {}
