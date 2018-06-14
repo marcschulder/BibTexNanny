@@ -72,6 +72,7 @@ def checkConsistency(entries):
         print(HEADLINE_PATTERN.format("Duplicate Keys"))
         for duplicateKey in duplicateKeys:
             print("Found duplicate key:".format(duplicateKey))
+        print()
 
     # Duplicate keys
     duplicateTitles = findDuplicateTitles(entries)
@@ -81,6 +82,18 @@ def checkConsistency(entries):
             keysString = getEnumerationString(keys)
             firstTitle = entries[keys[0]]['title']
             print("Entries {} have the same title: {}".format(keysString, firstTitle))
+        print()
+
+    # Bad Formatting #
+    # Unsecured uppercase characters in titles
+    unsecuredTitles = findUnsecuredUppercase(entries)
+    if unsecuredTitles:
+        print(HEADLINE_PATTERN.format("Titles with uppercase characters that are not secured by {}-brackets"))
+        for key in unsecuredTitles:
+            title = entries[key]['title']
+            print("Entry {} have unsecured uppercase characters: {}".format(key, title))
+        print()
+
 
 
 def findDuplicateKeys(entries):
@@ -113,6 +126,38 @@ def findDuplicateTitles(entries, ignoreCurlyBrackets=True, ignoreCaps=True):
             duplicates[title] = keys
 
     return duplicates
+
+
+def findUnsecuredUppercase(entries):
+    """
+    Find entries that contain uppercase characters that are not secured by {}-brackets.
+    The only uppercase character that needs no brackets is the first letter of the title, as it is automatically
+    converted to uppercase anyway.
+
+    Background: In most bibliography styles titles are by defauly displayed with only the first character being uppercase and all
+    others are forced to be lowercase. If you want to display any other uppercase characters, you have to secure them
+    by wrapping them in {}-brackets.
+    :param entries:
+    :return:
+    """
+    unsecured = []
+    for key, entry in entries.items():
+        title = entry["title"]
+        isSecured = False
+
+        # Skip first character (unless it is a curly bracket) as it is auto-converted to uppercase anyway
+        if title[0] != '{':
+            title = title[1:]
+        
+        for c in title:
+            if c == '{':
+                isSecured = True
+            elif c == '}':
+                isSecured = False
+            elif not isSecured and c.isupper():
+                unsecured.append(key)
+                break
+    return unsecured
 
 
 def main():
