@@ -4,12 +4,13 @@
 Checks the consistency of BibTeX entries.
 """
 
-__author__ = 'Marc Schulder'
-
 import nanny
 import argparse
 
+__author__ = 'Marc Schulder'
+
 HEADLINE_PATTERN = "===== {} ====="
+NOT_IMPLEMENTED_PATTERN = "Warning for {} not yet implemented"
 
 
 def getEnumerationString(items, quotes=None):
@@ -48,7 +49,7 @@ def getEnumerationString(items, quotes=None):
 def checkConsistency(entries):
     # Check for Duplicates #
     # Duplicate keys
-    print("Detecting duplicate keys not yet implemented")
+    print(NOT_IMPLEMENTED_PATTERN.format("duplicate keys"))
     # duplicateKeys = nanny.findDuplicateKeys(entries)
     # if duplicateKeys:
     #     print(HEADLINE_PATTERN.format("Duplicate Keys"))
@@ -56,7 +57,7 @@ def checkConsistency(entries):
     #         print("Found duplicate key:".format(duplicateKey))
     #     print()
 
-    # Duplicate keys
+    # Duplicate titles
     duplicateTitles = nanny.findDuplicateTitles(entries)
     if duplicateTitles:
         print(HEADLINE_PATTERN.format("Duplicate Keys"))
@@ -66,22 +67,44 @@ def checkConsistency(entries):
             print("Entries {} have the same title: {}".format(keysString, firstTitle))
         print()
 
+    # Missing fields #
+    # Missing mandatory fields
+    print(NOT_IMPLEMENTED_PATTERN.format("missing mandatory fields"))
+    # Missing optional fields
+    print(NOT_IMPLEMENTED_PATTERN.format("missing optional fields"))
+
     # Bad Formatting #
     # Unsecured uppercase characters in titles
-    unsecuredTitles = nanny.findUnsecuredUppercase(entries)
-    if unsecuredTitles:
-        print(HEADLINE_PATTERN.format("Titles with uppercase characters that are not secured by curly brackets"))
-        for key in unsecuredTitles:
+    key2unsecuredChars = nanny.findUnsecuredUppercase(entries)
+    if key2unsecuredChars:
+        print(HEADLINE_PATTERN.format("Titles with uppercase characters that are not secured by curly braces"))
+        for key in key2unsecuredChars:
             title = entries[key]['title']
-            print("Entry {} have unsecured uppercase characters: {}".format(key, title))
+            print("Entry {} has unsecured uppercase characters: {}".format(key, title))
         print()
 
+    # Unnecessary curly braces
+    print(NOT_IMPLEMENTED_PATTERN.format("unnecessary curly braces"))
 
+    # Bad page number hyphens
+    print(NOT_IMPLEMENTED_PATTERN.format("bad page number hyphens"))
+
+    # Inconsistent Formatting #
+    # Inconsistent names for conferences
+    print(NOT_IMPLEMENTED_PATTERN.format("inconsistent names for conferences"))
+
+    # Inconsistent name initials formatting
+    print(NOT_IMPLEMENTED_PATTERN.format("inconsistent name initials formatting"))
+
+    # Inconsistent location names
+    print(NOT_IMPLEMENTED_PATTERN.format("inconsistent names for conferences"))
 
 
 def main():
     parser = argparse.ArgumentParser(description='Check the consistency of BibTeX entries.')
     parser.add_argument('bibtexfile')
+    # TODO: Allow multiple bibtex files
+    # TODO: Allow aux file to limit consistency check to items actually cited in latex document.
 
     args = parser.parse_args()
 
