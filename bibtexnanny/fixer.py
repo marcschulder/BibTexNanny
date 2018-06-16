@@ -60,8 +60,6 @@ def fixEntries(entries):
     # Inconsistent location names
     print(NOT_IMPLEMENTED_PATTERN.format("inconsistent names for conferences"))
 
-    return entries
-
 
 def fixUnsecuredUppercase(text, unsecuredChars):
     unsecuredChars = set(unsecuredChars)
@@ -88,16 +86,18 @@ def main():
     parser.add_argument('input')
     parser.add_argument('output')
     parser.add_argument('-a', '--aux')
-    # TODO: Allow aux file to limit fixes check to items actually cited in latex document.
 
     args = parser.parse_args()
 
-    entries = nanny.loadBibTex(args.input)
+    entries, preamble = nanny.loadBibTex(args.input, loadPreamble=True)
+    all_entries = entries
     if args.aux:
         keyWhitelist = nanny.loadCitedKeys(args.aux)
         entries = nanny.filterEntries(entries, keyWhitelist)
-    fixedEntries = fixEntries(entries)
-    nanny.saveBibTex(args.output, fixedEntries)
+    fixEntries(entries)
+    nanny.saveBibTex(args.output, all_entries, preamble)
+    for k, v in all_entries.items():
+        break
 
 
 if __name__ == '__main__':
