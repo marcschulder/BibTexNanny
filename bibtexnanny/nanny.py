@@ -155,3 +155,20 @@ def findUnsecuredUppercase(entries):
             elif not isSecured and c.isupper():
                 key2unsecuredChars.setdefault(key, []).append(i)
     return key2unsecuredChars
+
+
+def findBadPageNumbers(entries, tolerateSingleHyphens=True):
+    if tolerateSingleHyphens:
+        pageRE = re.compile(r'^{0}(,{0})*$'.format(r'\d+((\-\-\d+)|(\-\d+)|(\+))?'))
+    else:
+        pageRE = re.compile(r'^{0}(,{0})*$'.format(r'\d+((\-\-\d+)|(\+))?'))
+
+    badEntries = []
+    for key, entry in entries.items():
+        if "pages" not in entry:
+            continue
+
+        pages = entry["pages"]
+        if not pageRE.match(pages):
+            badEntries.append(entry)
+    return badEntries

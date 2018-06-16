@@ -87,8 +87,13 @@ def checkConsistency(entries):
     # Unnecessary curly braces
     print(NOT_IMPLEMENTED_PATTERN.format("unnecessary curly braces"))
 
-    # Bad page number hyphens
-    print(NOT_IMPLEMENTED_PATTERN.format("bad page number hyphens"))
+    # Bad page numbers
+    badPageNumberEntries = nanny.findBadPageNumbers(entries, tolerateSingleHyphens=False)
+    if badPageNumberEntries:
+        print(HEADLINE_PATTERN.format("Titles with badly formatted page numbers"))
+        for entry in badPageNumberEntries:
+            print("Entry {} has bad page number format: {}".format(entry.key, entry[nanny.FIELD_PAGES]))
+        print()
 
     # Inconsistent Formatting #
     # Inconsistent names for conferences
