@@ -364,7 +364,8 @@ class Entry(collections.OrderedDict):
 
         lines = ['@%s{%s,' % (self.typ, self.key)]
         for k, v in self.items():
-            start = '  {:12} = '.format(k)
+            k = '-'.join([k.capitalize() for k in k.split('-')])
+            start = '\t{} = '.format(k)
 
             if month_to_macro and k == 'month':
                 try:
@@ -376,7 +377,8 @@ class Entry(collections.OrderedDict):
                     continue
 
             if v.isdigit():
-                lines.append(start + v + ',')
+                # lines.append(start + v + ',')
+                lines.append(start + '{' + v + '},')
             elif wrap_width is None:
                 lines.append(start + '{' + v + '},')
             else:
@@ -387,7 +389,9 @@ class Entry(collections.OrderedDict):
                     # Don't break long things like URLs
                     break_long_words=False, break_on_hyphens=False,
                     initial_indent=start + '{', subsequent_indent='    ') + '},')
-        lines.append('}')
+        last_line = lines[-1]
+        lines[-1] = last_line[:-1] + '}'
+        # lines.append('}')
         return '\n'.join(lines)
 
     def resolve_crossref(self, entries):
