@@ -14,33 +14,33 @@ HEADLINE_PATTERN = "===== {} ====="
 NOT_IMPLEMENTED_PATTERN = "Warning for {} not yet implemented"
 
 
-def getEnumerationString(items, quotes=None):
-    if len(items) == 0:
+def getEnumerationString(entries, quotes=None):
+    if len(entries) == 0:
         return ''
-    if len(items) == 1:
+    if len(entries) == 1:
         if quotes is None:
-            return items[0]
+            return entries[0].key
         else:
-            return "{1}{0}{1}".format(items[0], quotes)
+            return "{1}{0}{1}".format(entries[0].key, quotes)
 
     else:
-        first_item = items[0]
-        last_item = items[-1]
-        remaining_items = items[1:-1]
+        first_entry = entries[0]
+        last_entry= entries[-1]
+        remaining_entries = entries[1:-1]
 
-        elems = [first_item]
-        for item in remaining_items:
+        elems = [first_entry.key]
+        for entry in remaining_entries:
             elems.append(', ')
             if quotes is not None:
                 elems.append(quotes)
-            elems.append(item)
+            elems.append(entry.key)
             if quotes is not None:
                 elems.append(quotes)
 
         elems.append(' and ')
         if quotes is not None:
             elems.append(quotes)
-        elems.append(last_item)
+        elems.append(last_entry.key)
         if quotes is not None:
             elems.append(quotes)
 
@@ -62,9 +62,9 @@ def checkConsistency(entries):
     duplicateTitles = nanny.findDuplicateTitles(entries)
     if duplicateTitles:
         print(HEADLINE_PATTERN.format("Duplicate Keys"))
-        for duplicateTitle, keys in duplicateTitles.items():
-            keysString = getEnumerationString(keys)
-            firstTitle = entries[keys[0]]['title']
+        for duplicateTitle, duplicateTitleEntries in duplicateTitles.items():
+            keysString = getEnumerationString(duplicateTitleEntries)
+            firstTitle = duplicateTitleEntries[0]['title']
             print("Entries {} have the same title: {}".format(keysString, firstTitle))
         print()
 

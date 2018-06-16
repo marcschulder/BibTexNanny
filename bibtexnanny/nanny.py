@@ -76,12 +76,12 @@ def findDuplicateTitles(entries, ignoreCurlyBraces=True, ignoreCaps=True):
         if ignoreCaps:
             title = title.lower()
 
-        seen.setdefault(title, []).append(key)
+        seen.setdefault(title, []).append(entry)
 
     duplicates = {}
-    for title, keys in seen.items():
-        if len(keys) >= 2:
-            duplicates[title] = keys
+    for title, entries in seen.items():
+        if len(entries) >= 2:
+            duplicates[title] = entries
 
     return duplicates
 
