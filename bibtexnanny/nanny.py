@@ -46,8 +46,9 @@ def loadBibTex(filename, loadPreamble=False):
         return entries
 
 
-def saveBibTex(filename, key2entry, preamble=''):
-    entryStrings = [entry.to_bib(wrap_width=None) for entry in key2entry.values()]
+def saveBibTex(filename, key2entry, preamble='', month_to_macro=True, wrap_width=70, bibdesk_compatible=False):
+    entryStrings = [entry.to_bib(month_to_macro=month_to_macro, wrap_width=wrap_width,
+                                 bibdesk_compatible=bibdesk_compatible) for entry in key2entry.values()]
     text = '\n\n'.join(entryStrings)
     with open(filename, 'w') as w:
         w.write(preamble)

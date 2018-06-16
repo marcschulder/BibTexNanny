@@ -352,7 +352,7 @@ class Entry(collections.OrderedDict):
         """Two Entries are equal if they have the same fields, type, and key."""
         return super().__eq__(o) and self.typ == o.typ and self.key == o.key
 
-    def to_bib(self, *, month_to_macro=True, wrap_width=70):
+    def to_bib(self, *, month_to_macro=True, wrap_width=70, bibdesk_compatible=False):
         """Return this entry formatted as a BibTeX .bib entry.
 
         If month_to_macro is True, attempt to parse month names and
@@ -364,8 +364,11 @@ class Entry(collections.OrderedDict):
 
         lines = ['@%s{%s,' % (self.typ, self.key)]
         for k, v in self.items():
-            k = '-'.join([k.capitalize() for k in k.split('-')])
-            start = '\t{} = '.format(k)
+            if bibdesk_compatible:
+                k = '-'.join([k.capitalize() for k in k.split('-')])
+                start = '\t{} = '.format(k)
+            else:
+                start = '  {:12} = '.format(k)
 
             if month_to_macro and k == 'month':
                 try:
@@ -377,8 +380,10 @@ class Entry(collections.OrderedDict):
                     continue
 
             if v.isdigit():
-                # lines.append(start + v + ',')
-                lines.append(start + '{' + v + '},')
+                if bibdesk_compatible:
+                    lines.append(start + '{' + v + '},')
+                else:
+                    lines.append(start + v + ',')
             elif wrap_width is None:
                 lines.append(start + '{' + v + '},')
             else:
@@ -389,9 +394,11 @@ class Entry(collections.OrderedDict):
                     # Don't break long things like URLs
                     break_long_words=False, break_on_hyphens=False,
                     initial_indent=start + '{', subsequent_indent='    ') + '},')
-        last_line = lines[-1]
-        lines[-1] = last_line[:-1] + '}'
-        # lines.append('}')
+        if bibdesk_compatible:
+            last_line = lines[-1]
+            lines[-1] = last_line[:-1] + '}'
+        else:
+            lines.append('}')
         return '\n'.join(lines)
 
     def resolve_crossref(self, entries):

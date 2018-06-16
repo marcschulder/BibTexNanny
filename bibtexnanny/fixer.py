@@ -95,7 +95,8 @@ def main():
         keyWhitelist = nanny.loadCitedKeys(args.aux)
         entries = nanny.filterEntries(entries, keyWhitelist)
     fixEntries(entries)
-    nanny.saveBibTex(args.output, all_entries, preamble)
+    nanny.saveBibTex(args.output, all_entries, preamble,
+                     month_to_macro=True, wrap_width=None, bibdesk_compatible=True)
 
 
 if __name__ == '__main__':
