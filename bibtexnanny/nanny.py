@@ -135,7 +135,6 @@ def findUnsecuredUppercase(entries):
         isSecured = False
 
         # Skip first character (unless it is a curly brace) as it is auto-converted to uppercase anyway
-        # full_title = title
         i_start = 0
         if title[0] != '{':
             title = title[1:]
@@ -147,6 +146,5 @@ def findUnsecuredUppercase(entries):
             elif c == '}':
                 isSecured = False
             elif not isSecured and c.isupper():
-                # print("Unsecured character {} ({}): {}".format(c, i, full_title))
                 key2unsecuredChars.setdefault(key, []).append(i)
     return key2unsecuredChars
