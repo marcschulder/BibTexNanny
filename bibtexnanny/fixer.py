@@ -4,7 +4,7 @@
 Fixes BibTeX entries.
 """
 
-import nanny
+from bibtexnanny import nanny
 import argparse
 
 __author__ = 'Marc Schulder'

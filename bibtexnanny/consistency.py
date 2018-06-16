@@ -4,8 +4,9 @@
 Checks the consistency of BibTeX entries.
 """
 
-import nanny
 import argparse
+
+from bibtexnanny import nanny
 
 __author__ = 'Marc Schulder'
 

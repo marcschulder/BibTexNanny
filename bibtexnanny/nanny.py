@@ -9,7 +9,7 @@ import os
 import re
 from collections import OrderedDict
 
-import biblib.bib
+from bibtexnanny.biblib import bib
 
 __author__ = 'Marc Schulder'
 
