@@ -9,6 +9,9 @@ TYPEFIELD = '@type'
 DEFAULT_KEY_START = 'foobar'
 DEFAULT_KEY = '{}{}'.format(DEFAULT_KEY_START, 2018)
 
+FIELD_TITLE = 'Title'
+FIELD_PAGES = 'Pages'
+
 
 def parse(text):
     parser = bib.Parser()
@@ -39,8 +42,8 @@ def getStringEntry(field2value, key=DEFAULT_KEY):
 class TestFindDuplicateTitles(TestCase):
     def test_findDuplicateTitles_Identical(self):
         title = 'Towards a new test environment'
-        entryString = getStringEntries([{'Title': title},
-                                        {'Title': title},
+        entryString = getStringEntries([{FIELD_TITLE: title},
+                                        {FIELD_TITLE: title},
                                         ])
         goldKeys = ['{}{}'.format(DEFAULT_KEY_START, i) for i in range(2)]
         goldTitle2keys = {title.lower(): goldKeys}
@@ -50,8 +53,8 @@ class TestFindDuplicateTitles(TestCase):
 
     def test_findDuplicateTitles_Lowercase(self):
         title = 'Towards a New Test Environment'
-        entryString = getStringEntries([{'Title': title},
-                                        {'Title': title.lower()},
+        entryString = getStringEntries([{FIELD_TITLE: title},
+                                        {FIELD_TITLE: title.lower()},
                                         ])
         goldKeys = ['{}{}'.format(DEFAULT_KEY_START, i) for i in range(2)]
         goldTitle2keys = {title.lower(): goldKeys}
@@ -62,8 +65,8 @@ class TestFindDuplicateTitles(TestCase):
     def test_findDuplicateTitles_Braces(self):
         title = 'Towards a {N}ew {T}est {E}nvironment'
         unbraced_title = title.replace('{', '').replace('}', '')
-        entryString = getStringEntries([{'Title': unbraced_title},
-                                        {'Title': title},
+        entryString = getStringEntries([{FIELD_TITLE: unbraced_title},
+                                        {FIELD_TITLE: title},
                                         ])
         goldKeys = ['{}{}'.format(DEFAULT_KEY_START, i) for i in range(2)]
         goldTitle2keys = {unbraced_title.lower(): goldKeys}
@@ -74,8 +77,8 @@ class TestFindDuplicateTitles(TestCase):
     def test_findDuplicateTitles_Braces2(self):
         title = 'Towards a {N}ew {T}est {E}nvironment'
         unbraced_title = title.replace('{', '').replace('}', '')
-        entryString = getStringEntries([{'Title': title},
-                                        {'Title': unbraced_title},
+        entryString = getStringEntries([{FIELD_TITLE: title},
+                                        {FIELD_TITLE: unbraced_title},
                                         ])
         goldKeys = ['{}{}'.format(DEFAULT_KEY_START, i) for i in range(2)]
         goldTitle2keys = {unbraced_title.lower(): goldKeys}
@@ -86,9 +89,9 @@ class TestFindDuplicateTitles(TestCase):
     def test_findDuplicateTitles_BracesAndLowercase(self):
         title = 'Towards a {N}ew {T}est {E}nvironment'
         unbraced_title = title.replace('{', '').replace('}', '')
-        entryString = getStringEntries([{'Title': unbraced_title},
-                                        {'Title': title},
-                                        {'Title': unbraced_title.lower()},
+        entryString = getStringEntries([{FIELD_TITLE: unbraced_title},
+                                        {FIELD_TITLE: title},
+                                        {FIELD_TITLE: unbraced_title.lower()},
                                         ])
         goldKeys = ['{}{}'.format(DEFAULT_KEY_START, i) for i in range(3)]
         goldTitle2keys = {unbraced_title.lower(): goldKeys}
@@ -98,10 +101,10 @@ class TestFindDuplicateTitles(TestCase):
 
     def test_findDuplicateTitles_Spaces(self):
         title = 'Towards a new test environment'
-        entryString = getStringEntries([{'Title': title},
-                                        {'Title': 'Towards a new   test environment'},
-                                        {'Title': 'Towards a new test environment '},
-                                        {'Title': '  Towards a new test environment'},
+        entryString = getStringEntries([{FIELD_TITLE: title},
+                                        {FIELD_TITLE: 'Towards a new   test environment'},
+                                        {FIELD_TITLE: 'Towards a new test environment '},
+                                        {FIELD_TITLE: '  Towards a new test environment'},
                                         ])
         goldKeys = ['{}{}'.format(DEFAULT_KEY_START, i) for i in range(4)]
         goldTitle2keys = {title.lower(): goldKeys}
@@ -112,25 +115,25 @@ class TestFindDuplicateTitles(TestCase):
 
 class TestFindUnsecuredUppercase(TestCase):
     def test_findUnsecuredUppercase_Basic(self):
-        entryString = getStringEntry({'Title': 'Logic and Conversation'})
+        entryString = getStringEntry({FIELD_TITLE: 'Logic and Conversation'})
         key2goldChars = {DEFAULT_KEY: [10]}
         key2unsecuredChars = nanny.findUnsecuredUppercase(parse(entryString))
         self.assertEqual(key2unsecuredChars, key2goldChars)
 
     def test_findUnsecuredUppercase_InWord(self):
-        entryString = getStringEntry({'Title': 'Aligning {G}ermaNet {S}enses'})
+        entryString = getStringEntry({FIELD_TITLE: 'Aligning {G}ermaNet {S}enses'})
         key2goldChars = {DEFAULT_KEY: [16]}
         key2unsecuredChars = nanny.findUnsecuredUppercase(parse(entryString))
         self.assertEqual(key2unsecuredChars, key2goldChars)
 
     def test_findUnsecuredUppercase_AllUpper(self):
-        entryString = getStringEntry({'Title': 'WORD ASSOCIATION'})
+        entryString = getStringEntry({FIELD_TITLE: 'WORD ASSOCIATION'})
         key2goldChars = {DEFAULT_KEY: [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}
         key2unsecuredChars = nanny.findUnsecuredUppercase(parse(entryString))
         self.assertEqual(key2unsecuredChars, key2goldChars)
 
     def test_findUnsecuredUppercase_AllUpperSecuredCap(self):
-        entryString = getStringEntry({'Title': 'WORD {A}SSOCIATION'})
+        entryString = getStringEntry({FIELD_TITLE: 'WORD {A}SSOCIATION'})
         key2goldChars = {DEFAULT_KEY: [1, 2, 3, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}
         key2unsecuredChars = nanny.findUnsecuredUppercase(parse(entryString))
         self.assertEqual(key2unsecuredChars, key2goldChars)

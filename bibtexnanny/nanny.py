@@ -14,6 +14,10 @@ from bibtexnanny.biblib import bib
 __author__ = 'Marc Schulder'
 
 
+FIELD_TITLE = 'title'
+FIELD_PAGES = 'pages'
+
+
 def loadBibTex(filename, loadPreamble=False):
     if not (os.path.exists(filename) and os.path.isfile(filename)):
         raise FileNotFoundError(filename)

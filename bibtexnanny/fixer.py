@@ -36,12 +36,13 @@ def fixEntries(entries):
     if key2unsecuredChars:
         print(HEADLINE_PATTERN.format("Securing uppercase characters in titles with curly braces"))
         for key, unsecuredChars in key2unsecuredChars.items():
-            original_title = entries[key]['title']
+            entry = entries[key]
+            original_title = entry[nanny.FIELD_TITLE]
             fixed_title = fixUnsecuredUppercase(original_title, unsecuredChars)
+            entry[nanny.FIELD_TITLE] = fixed_title
             print("Fixed {} unsecured uppercase characters in entry {}".format(len(unsecuredChars), key))
             print("  Before: {}".format(original_title))
             print("  After:  {}".format(fixed_title))
-            entries[key]['title'] = fixed_title
         print()
 
     # Unnecessary curly braces
