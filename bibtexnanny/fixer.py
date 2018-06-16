@@ -96,8 +96,6 @@ def main():
         entries = nanny.filterEntries(entries, keyWhitelist)
     fixEntries(entries)
     nanny.saveBibTex(args.output, all_entries, preamble)
-    for k, v in all_entries.items():
-        break
 
 
 if __name__ == '__main__':
