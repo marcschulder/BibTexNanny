@@ -23,25 +23,6 @@ FIELD_IS_OPTIONAL_AVAILABLE = 'optional available'
 FIELD_IS_OPTIONAL_MISSING = 'optional missing'
 FIELD_IS_ADDITIONAL = 'additional'
 
-# TYPES = ['article', 'book', 'booklet', 'conference', 'inbook', 'incollection', 'inproceedings', 'manual',
-#          'mastersthesis', 'misc', 'phdthesis', 'proceedings', 'techreport', 'unpublished']
-
-
-# TYPE2REQUIRED_FIELDS = {'article': (('author',), ('title',), ('journal',), ('year',), ('volume',)),
-#                         'book': (('author', 'editor'), ('title',), ('publisher',), ('year',)),
-#                         'booklet': (('title',),),
-#                         'conference': (('author',), ('title',), ('booktitle',), ('year',)),
-#                         'inbook': (('author', 'editor'), ('title',), ('chapter', 'pages'), ('publisher',), ('year',)),
-#                         'incollection': (('author',), ('title',), ('booktitle',), ('publisher',), ('year',)),
-#                         'inproceedings': (('author',), ('title',), ('booktitle',), ('year',)),
-#                         'manual': (('title',),),
-#                         'mastersthesis': (('author',), ('title',), ('school',), ('year',)),
-#                         'misc': (),
-#                         'phdthesis': (('author',), ('title',), ('school',), ('year',)),
-#                         'proceedings': (('title',), ('year',)),
-#                         'techreport': (('author',), ('title',), ('institution',), ('year',)),
-#                         'unpublished': (('author',), ('title',), ('note',)),
-#                         }
 TYPE2REQUIRED_FIELDS = {'article': {'author', 'title', 'journal', 'year', 'volume'},
                         'book': {'author', 'editor', 'title', 'publisher', 'year'},
                         'booklet': {'title'},
@@ -62,29 +43,6 @@ TYPE2REQUIRED_ALTERNATIVES = {'book': {'author': 'editor', 'editor': 'author'},
                                          'chapter': 'pages', 'pages': 'chapter'},
                               }
 
-# TYPE2OPTIONAL_FIELDS = {'article': (('number',), ('pages',), ('month',), ('note',), ('key',)),
-#                         'book': (('volume', 'number'), ('series',), ('address',), ('edition',), ('month',), ('note',),
-#                                  ('key',), ('url',)),
-#                         'booklet': (('author',), ('howpublished',), ('address',), ('month',), ('year',), ('note',),
-#                                     ('key',)),
-#                         'conference': (('editor',), ('volume', 'number'), ('series',), ('pages',), ('address',),
-#                                        ('month',), ('organization',), ('publisher',), ('note',), ('key',)),
-#                         'inbook': (('volume', 'number'), ('series',), ('type',), ('address',), ('edition',), ('month',),
-#                                    ('note',), ('key',)),
-#                         'incollection': (('editor',), ('volume', 'number'), ('series',), ('type',), ('chapter',),
-#                                          ('pages',), ('address',), ('edition',), ('month',), ('note',), ('key',)),
-#                         'inproceedings': (('editor',), ('volume', 'number'), ('series',), ('pages',), ('address',),
-#                                           ('month',), ('organization',), ('publisher',), ('note',), ('key',)),
-#                         'manual': (('author',), ('organization',), ('address',), ('edition',), ('month',), ('year',),
-#                                    ('note',), ('key',)),
-#                         'mastersthesis': (('type',), ('address',), ('month',), ('note',), ('key',)),
-#                         'misc': (('author',), ('title',), ('howpublished',), ('month',), ('year',), ('note',), ('key',)),
-#                         'phdthesis': (('type',), ('address',), ('month',), ('note',), ('key',)),
-#                         'proceedings': (('editor',), ('volume', 'number'), ('series',), ('address',), ('month',),
-#                                         ('publisher',), ('organization',), ('note',), ('key',)),
-#                         'techreport': (('type',), ('number',), ('address',), ('month',), ('note',), ('key',)),
-#                         'unpublished': (('month',), ('year',), ('key',)),
-#                         }
 TYPE2OPTIONAL_FIELDS = {'article': {'number', 'pages', 'month', 'note', 'key'},
                         'book': {'volume', 'number', 'series', 'address', 'edition', 'month', 'note', 'key', 'url'},
                         'booklet': {'author', 'howpublished', 'address', 'month', 'year', 'note', 'key'},
