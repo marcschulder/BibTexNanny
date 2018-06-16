@@ -236,7 +236,7 @@ def findDuplicateKeys(entries):
 
 
 def findDuplicateTitles(entries, ignoreCurlyBraces=True, ignoreCaps=True):
-    seen = {}
+    key2seen = {}
     for key, entry in entries.items():
         title = entry["title"]
         if ignoreCurlyBraces:
@@ -245,14 +245,14 @@ def findDuplicateTitles(entries, ignoreCurlyBraces=True, ignoreCaps=True):
         if ignoreCaps:
             title = title.lower()
 
-        seen.setdefault(title, []).append(entry)
+        key2seen.setdefault(title, []).append(entry)
 
-    duplicates = {}
-    for title, entries in seen.items():
+    key2duplicates = {}
+    for title, entries in key2seen.items():
         if len(entries) >= 2:
-            duplicates[title] = entries
+            key2duplicates[title] = entries
 
-    return duplicates
+    return key2duplicates
 
 
 def findUnsecuredUppercase(entries):
