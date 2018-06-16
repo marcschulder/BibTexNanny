@@ -4,13 +4,17 @@
 Fixes BibTeX entries.
 """
 
-from bibtexnanny import nanny
+import re
 import argparse
+
+from bibtexnanny import nanny
 
 __author__ = 'Marc Schulder'
 
 HEADLINE_PATTERN = "===== {} ====="
 NOT_IMPLEMENTED_PATTERN = "Auto-fix for {} not yet implemented"
+
+RE_NOTPAGES_CHAR = re.compile(r'[^0-9\-\+\,]+')
 
 
 def fixEntries(entries):
@@ -49,7 +53,17 @@ def fixEntries(entries):
     print(NOT_IMPLEMENTED_PATTERN.format("unnecessary curly braces"))
 
     # Bad page number hyphens
-    print(NOT_IMPLEMENTED_PATTERN.format("bad page number hyphens"))
+    badPageNumberEntries = nanny.findBadPageNumbers(entries)
+    if badPageNumberEntries:
+        print(HEADLINE_PATTERN.format("Fixing page numbers"))
+        for entry in badPageNumberEntries:
+            original_pages = entry[nanny.FIELD_PAGES]
+            fixed_pages = fixBadPageNumbers(original_pages)
+            entry[nanny.FIELD_PAGES] = fixed_pages
+            print("Fixed page numbers for entry {}".format(entry.key))
+            print("  Before: {}".format(original_pages))
+            print("  After:  {}".format(fixed_pages))
+        print()
 
     # Inconsistent Formatting #
     # Inconsistent names for conferences
@@ -80,6 +94,15 @@ def fixUnsecuredUppercase(text, unsecuredChars):
             lastCharWasClosingCurlyBrace = c == '}'
     fixed_title = ''.join(fixed_chars)
     return fixed_title
+
+
+def fixBadPageNumbers(pages):
+    pages = pages.replace(' ', '')
+    while '---' in pages:
+        pages = pages.replace('---', '--')
+    if RE_NOTPAGES_CHAR.search(pages):
+        pages = RE_NOTPAGES_CHAR.sub('', pages)
+    return pages
 
 
 def main():
