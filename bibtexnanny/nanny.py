@@ -14,12 +14,24 @@ from bibtexnanny.biblib import bib
 __author__ = 'Marc Schulder'
 
 
-def loadBibTex(filename):
-    # TODO: Load preamble
+def loadBibTex(filename, loadPreamble=False):
     if not (os.path.exists(filename) and os.path.isfile(filename)):
         raise FileNotFoundError(filename)
 
-    parser = biblib.bib.Parser()
+    preamble = ''
+    if loadPreamble:
+        # Read preamble
+        preamble_lines = []
+        with open(filename) as f:
+            for line in f:
+                if line.strip().startswith('@') and not line.strip().startswith('@comment{'):
+                    break
+                else:
+                    preamble_lines.append(line)
+        preamble = ''.join(preamble_lines)
+
+    # Parse BibTex entries
+    parser = bib.Parser()
     with open(filename) as f:
         parser.parse(f, log_fp=sys.stderr)
 
@@ -28,11 +40,36 @@ def loadBibTex(filename):
     # # Resolve cross-references
     # entries = biblib.bib.resolve_crossrefs(entries)
 
-    return entries
+    if loadPreamble:
+        return entries, preamble
+    else:
+        return entries
 
 
-def loadCitedKeys(filename):
-    return []
+def saveBibTex(filename, key2entry, preamble=''):
+    entryStrings = [entry.to_bib(wrap_width=None) for entry in key2entry.values()]
+    text = '\n\n'.join(entryStrings)
+    with open(filename, 'w') as w:
+        w.write(preamble)
+        w.write(text)
+        w.write('\n')
+
+
+def loadCitedKeys(filename, lowercaseKeys=False):
+    citationRE = re.compile(r"^\\citation{(.*)}$")
+    keys = set()
+    with open(filename) as f:
+        for line in f:
+            line = line.strip()
+            citationMatch = citationRE.match(line)
+            if citationMatch:
+                citationString = citationMatch.group(1)
+                citations = citationString.split(',')
+                for citation in citations:
+                    if lowercaseKeys:
+                        citation = citation.lower()
+                    keys.add(citation)
+    return keys
 
 
 def filterEntries(key2entry, keyWhitelist):
@@ -40,18 +77,11 @@ def filterEntries(key2entry, keyWhitelist):
     filteredEntries = OrderedDict()
 
     for key, entry in key2entry.items():
+        key = key.lower()
         if key in keyWhitelist:
             filteredEntries[key] = entry
 
     return filteredEntries
-
-
-def saveBibTex(filename, key2entry):
-    # TODO: save preamble
-    entryStrings = [entry.to_bib(wrap_width=None) for entry in key2entry.values()]
-    text = '\n\n'.join(entryStrings)
-    with open(filename, 'w') as w:
-        w.write(text)
 
 
 def findDuplicateKeys(entries):
