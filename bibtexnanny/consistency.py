@@ -69,19 +69,19 @@ def checkConsistency(entries):
         print()
 
     # Missing fields #
-    # Missing mandatory fields
-    print(NOT_IMPLEMENTED_PATTERN.format("missing mandatory fields"))
-    # Missing optional fields
-    print(NOT_IMPLEMENTED_PATTERN.format("missing optional fields"))
-
-    # Bad Formatting #
-    # Unsecured uppercase characters in titles
-    key2unsecuredChars = nanny.findUnsecuredUppercase(entries)
-    if key2unsecuredChars:
-        print(HEADLINE_PATTERN.format("Titles with uppercase characters that are not secured by curly braces"))
-        for key in key2unsecuredChars:
-            title = entries[key][nanny.FIELD_TITLE]
-            print("Entry {} has unsecured uppercase characters: {}".format(key, title))
+    key2availability = nanny.getFieldAvailabilities(entries)
+    if key2availability:
+        print(HEADLINE_PATTERN.format("Missing fields"))
+        for key, availability in key2availability.items():
+            missingRequiredFields = availability[nanny.FIELD_IS_REQUIRED_MISSING]
+            missingOptionalFields = availability[nanny.FIELD_IS_OPTIONAL_MISSING]
+            if missingRequiredFields:
+            # if missingRequiredFields or missingOptionalFields:
+                print("Entry {}".format(key))
+                if missingRequiredFields:
+                    print("  Required missing: ", ', '.join(missingRequiredFields))
+                if missingOptionalFields:
+                    print("  Optional missing: ", ', '.join(missingOptionalFields))
         print()
 
     # Unnecessary curly braces

@@ -28,8 +28,8 @@ def fixEntries(entries):
 
 
     # Missing fields #
-    # Missing mandatory fields
-    print(NOT_IMPLEMENTED_PATTERN.format("missing mandatory fields"))
+    # Missing required fields
+    print(NOT_IMPLEMENTED_PATTERN.format("missing required fields"))
     # Missing optional fields
     print(NOT_IMPLEMENTED_PATTERN.format("missing optional fields"))
     print()

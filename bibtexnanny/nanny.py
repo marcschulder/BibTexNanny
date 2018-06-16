@@ -17,6 +17,100 @@ __author__ = 'Marc Schulder'
 FIELD_TITLE = 'title'
 FIELD_PAGES = 'pages'
 
+FIELD_IS_REQUIRED_AVAILABLE = 'required available'
+FIELD_IS_REQUIRED_MISSING = 'required missing'
+FIELD_IS_OPTIONAL_AVAILABLE = 'optional available'
+FIELD_IS_OPTIONAL_MISSING = 'optional missing'
+FIELD_IS_ADDITIONAL = 'additional'
+
+# TYPES = ['article', 'book', 'booklet', 'conference', 'inbook', 'incollection', 'inproceedings', 'manual',
+#          'mastersthesis', 'misc', 'phdthesis', 'proceedings', 'techreport', 'unpublished']
+
+
+# TYPE2REQUIRED_FIELDS = {'article': (('author',), ('title',), ('journal',), ('year',), ('volume',)),
+#                         'book': (('author', 'editor'), ('title',), ('publisher',), ('year',)),
+#                         'booklet': (('title',),),
+#                         'conference': (('author',), ('title',), ('booktitle',), ('year',)),
+#                         'inbook': (('author', 'editor'), ('title',), ('chapter', 'pages'), ('publisher',), ('year',)),
+#                         'incollection': (('author',), ('title',), ('booktitle',), ('publisher',), ('year',)),
+#                         'inproceedings': (('author',), ('title',), ('booktitle',), ('year',)),
+#                         'manual': (('title',),),
+#                         'mastersthesis': (('author',), ('title',), ('school',), ('year',)),
+#                         'misc': (),
+#                         'phdthesis': (('author',), ('title',), ('school',), ('year',)),
+#                         'proceedings': (('title',), ('year',)),
+#                         'techreport': (('author',), ('title',), ('institution',), ('year',)),
+#                         'unpublished': (('author',), ('title',), ('note',)),
+#                         }
+TYPE2REQUIRED_FIELDS = {'article': {'author', 'title', 'journal', 'year', 'volume'},
+                        'book': {'author', 'editor', 'title', 'publisher', 'year'},
+                        'booklet': {'title'},
+                        'conference': {'author', 'title', 'booktitle', 'year'},
+                        'inbook': {'author', 'editor', 'title', 'chapter', 'pages', 'publisher', 'year'},
+                        'incollection': {'author', 'title', 'booktitle', 'publisher', 'year'},
+                        'inproceedings': {'author', 'title', 'booktitle', 'year'},
+                        'manual': {'title'},
+                        'mastersthesis': {'author', 'title', 'school', 'year'},
+                        'misc': {},
+                        'phdthesis': {'author', 'title', 'school', 'year'},
+                        'proceedings': {'title', 'year'},
+                        'techreport': {'author', 'title', 'institution', 'year'},
+                        'unpublished': {'author', 'title', 'note'},
+                        }
+TYPE2REQUIRED_ALTERNATIVES = {'book': {'author': 'editor', 'editor': 'author'},
+                              'inbook': {'author': 'editor', 'editor': 'author',
+                                         'chapter': 'pages', 'pages': 'chapter'},
+                              }
+
+# TYPE2OPTIONAL_FIELDS = {'article': (('number',), ('pages',), ('month',), ('note',), ('key',)),
+#                         'book': (('volume', 'number'), ('series',), ('address',), ('edition',), ('month',), ('note',),
+#                                  ('key',), ('url',)),
+#                         'booklet': (('author',), ('howpublished',), ('address',), ('month',), ('year',), ('note',),
+#                                     ('key',)),
+#                         'conference': (('editor',), ('volume', 'number'), ('series',), ('pages',), ('address',),
+#                                        ('month',), ('organization',), ('publisher',), ('note',), ('key',)),
+#                         'inbook': (('volume', 'number'), ('series',), ('type',), ('address',), ('edition',), ('month',),
+#                                    ('note',), ('key',)),
+#                         'incollection': (('editor',), ('volume', 'number'), ('series',), ('type',), ('chapter',),
+#                                          ('pages',), ('address',), ('edition',), ('month',), ('note',), ('key',)),
+#                         'inproceedings': (('editor',), ('volume', 'number'), ('series',), ('pages',), ('address',),
+#                                           ('month',), ('organization',), ('publisher',), ('note',), ('key',)),
+#                         'manual': (('author',), ('organization',), ('address',), ('edition',), ('month',), ('year',),
+#                                    ('note',), ('key',)),
+#                         'mastersthesis': (('type',), ('address',), ('month',), ('note',), ('key',)),
+#                         'misc': (('author',), ('title',), ('howpublished',), ('month',), ('year',), ('note',), ('key',)),
+#                         'phdthesis': (('type',), ('address',), ('month',), ('note',), ('key',)),
+#                         'proceedings': (('editor',), ('volume', 'number'), ('series',), ('address',), ('month',),
+#                                         ('publisher',), ('organization',), ('note',), ('key',)),
+#                         'techreport': (('type',), ('number',), ('address',), ('month',), ('note',), ('key',)),
+#                         'unpublished': (('month',), ('year',), ('key',)),
+#                         }
+TYPE2OPTIONAL_FIELDS = {'article': {'number', 'pages', 'month', 'note', 'key'},
+                        'book': {'volume', 'number', 'series', 'address', 'edition', 'month', 'note', 'key', 'url'},
+                        'booklet': {'author', 'howpublished', 'address', 'month', 'year', 'note', 'key'},
+                        'conference': {'editor', 'volume', 'number', 'series', 'pages', 'address', 'month',
+                                       'organization', 'publisher', 'note', 'key'},
+                        'inbook': {'volume', 'number', 'series', 'type', 'address', 'edition', 'month', 'note', 'key'},
+                        'incollection': {'editor', 'volume', 'number', 'series', 'type', 'chapter', 'pages', 'address',
+                                         'edition', 'month', 'note', 'key'},
+                        'inproceedings': {'editor', 'volume', 'number', 'series', 'pages', 'address', 'month',
+                                          'organization', 'publisher', 'note', 'key'},
+                        'manual': {'author', 'organization', 'address', 'edition', 'month', 'year', 'note', 'key'},
+                        'mastersthesis': {'type', 'address', 'month', 'note', 'key'},
+                        'misc': {'author', 'title', 'howpublished', 'month', 'year', 'note', 'key'},
+                        'phdthesis': {'type', 'address', 'month', 'note', 'key'},
+                        'proceedings': {'editor', 'volume', 'number', 'series', 'address', 'month', 'publisher',
+                                        'organization', 'note', 'key'},
+                        'techreport': {'type', 'number', 'address', 'month', 'note', 'key'},
+                        'unpublished': {'month', 'year', 'key'},
+                        }
+TYPE2OPTIONAL_ALTERNATIVES = {'book': {'volume': 'number', 'number': 'volume'},
+                              'inbook': {'volume': 'number', 'number': 'volume'},
+                              'incollection': {'volume': 'number', 'number': 'volume'},
+                              'inproceedings': {'volume': 'number', 'number': 'volume'},
+                              'proceedings': {'volume': 'number', 'number': 'volume'},
+                              }
+
 
 def loadBibTex(filename, loadPreamble=False):
     if not (os.path.exists(filename) and os.path.isfile(filename)):
@@ -89,6 +183,46 @@ def filterEntries(key2entry, keyWhitelist):
     return filteredEntries
 
 
+def getFieldAvailability(entry):
+    availability = {FIELD_IS_REQUIRED_AVAILABLE: [],
+                    FIELD_IS_REQUIRED_MISSING: [],
+                    FIELD_IS_OPTIONAL_AVAILABLE: [],
+                    FIELD_IS_OPTIONAL_MISSING: [],
+                    FIELD_IS_ADDITIONAL: [],
+                    }
+    unseenRequiredFields = set(TYPE2REQUIRED_FIELDS[entry.typ])
+    requiredFields = TYPE2REQUIRED_FIELDS[entry.typ]
+    unseenOptionalFields = set(TYPE2OPTIONAL_FIELDS[entry.typ])
+    optionalFields = TYPE2OPTIONAL_FIELDS[entry.typ]
+    requiredAlts = TYPE2REQUIRED_ALTERNATIVES.get(entry.typ, {})
+    optionalAlts = TYPE2OPTIONAL_ALTERNATIVES.get(entry.typ, {})
+
+    for field in entry:
+        if field in requiredFields:
+            availability[FIELD_IS_REQUIRED_AVAILABLE].append(field)
+            unseenRequiredFields.discard(field)
+            if field in requiredAlts:
+                unseenRequiredFields.discard(requiredAlts[field])
+        elif field in optionalFields:
+            availability[FIELD_IS_OPTIONAL_AVAILABLE].append(field)
+            unseenOptionalFields.discard(field)
+            if field in optionalAlts:
+                unseenOptionalFields.discard(optionalAlts[field])
+        else:
+            availability[FIELD_IS_ADDITIONAL].append(field)
+    availability[FIELD_IS_REQUIRED_MISSING].extend(unseenRequiredFields)
+    availability[FIELD_IS_OPTIONAL_MISSING].extend(unseenOptionalFields)
+
+    return availability
+
+
+def getFieldAvailabilities(entries):
+    key2availability = OrderedDict()
+    for key, entry in entries.items():
+        key2availability[key] = getFieldAvailability(entry)
+    return key2availability
+
+
 def findDuplicateKeys(entries):
     # Can not be checked for right now because biblib throws errors when encountering repeated keys
 
@@ -133,7 +267,7 @@ def findUnsecuredUppercase(entries):
     :param entries:
     :return:
     """
-    key2unsecuredChars = {}
+    key2unsecuredChars = OrderedDict()
     for key, entry in entries.items():
         if "title" not in entry:
             continue
