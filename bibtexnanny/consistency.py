@@ -104,12 +104,14 @@ def checkConsistency(entries):
 def main():
     parser = argparse.ArgumentParser(description='Check the consistency of BibTeX entries.')
     parser.add_argument('bibtexfile')
+    parser.add_argument('-a', '--aux')
     # TODO: Allow multiple bibtex files
-    # TODO: Allow aux file to limit consistency check to items actually cited in latex document.
-
     args = parser.parse_args()
 
     entries = nanny.loadBibTex(args.bibtexfile)
+    if args.aux:
+        keyWhitelist = nanny.loadCitedKeys(args.aux)
+        entries = nanny.filterEntries(entries, keyWhitelist)
     checkConsistency(entries)
 
 
