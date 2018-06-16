@@ -64,7 +64,7 @@ def checkConsistency(entries):
         print(HEADLINE_PATTERN.format("Duplicate Keys"))
         for duplicateTitle, duplicateTitleEntries in duplicateTitles.items():
             keysString = getEnumerationString(duplicateTitleEntries)
-            firstTitle = duplicateTitleEntries[0]['title']
+            firstTitle = duplicateTitleEntries[0][nanny.FIELD_TITLE]
             print("Entries {} have the same title: {}".format(keysString, firstTitle))
         print()
 
@@ -80,7 +80,7 @@ def checkConsistency(entries):
     if key2unsecuredChars:
         print(HEADLINE_PATTERN.format("Titles with uppercase characters that are not secured by curly braces"))
         for key in key2unsecuredChars:
-            title = entries[key]['title']
+            title = entries[key][nanny.FIELD_TITLE]
             print("Entry {} has unsecured uppercase characters: {}".format(key, title))
         print()
 
