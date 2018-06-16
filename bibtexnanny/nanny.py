@@ -131,6 +131,9 @@ def findUnsecuredUppercase(entries):
     """
     key2unsecuredChars = {}
     for key, entry in entries.items():
+        if "title" not in entry:
+            continue
+
         title = entry["title"]
         isSecured = False
 
