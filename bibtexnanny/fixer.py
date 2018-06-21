@@ -169,7 +169,22 @@ def fixEntries(entries, config, show):
 
     # Inconsistent location names
     if config.inconsistentLocations:
-        print(NOT_IMPLEMENTED_PATTERN.format("inconsistent names for conferences"))
+        locationKnowledge = nanny.LocationKnowledge(countryFile='info/countries.config', statesFile='info/states.config')
+        if show.inconsistentLocations:
+            print(HEADLINE_PATTERN.format("Fixing incomplete location names"))
+            # TODO: Also use information from other entries to expand this one
+        for key, entry in entries.items():
+            if 'address' in entry:
+                address = entry['address']
+                location = nanny.Location(address, locationKnowledge)
+                location.expandInformation()
+                fixedAddress = location.getString()
+                if fixedAddress != address:
+                    entry['address'] = fixedAddress
+                    if show.inconsistentLocations:
+                        print("Fixed address info for entry {}".format(entry.key))
+                        print("  Before: {}".format(address))
+                        print("  After:  {}".format(fixedAddress))
 
 
 def fixUnsecuredUppercase(text, unsecuredChars):

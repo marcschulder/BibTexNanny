@@ -247,6 +247,70 @@ class FieldInferrer:
                                 entry[field] = value
 
 
+class LocationKnowledge:
+    def __init__(self, countryFile, statesFile):
+        self.countries2alts = {}
+        self.country2short2state = {}
+        self.country2state2short = {}
+
+        self.loadCountries(countryFile)
+        self.loadStates(statesFile)
+
+    def loadCountries(self, filename):
+        pass
+
+    def loadStates(self, filename):
+        config = configparser.ConfigParser()
+        config.optionxform = lambda option: option
+        config.read(filename)
+        for sectionName in config.sections():
+            short2state = self.country2short2state.setdefault(sectionName, {})
+            state2short = self.country2state2short.setdefault(sectionName, {})
+            for state, short in config.items(sectionName):
+                short2state[short] = state
+                state2short[state] = short
+
+    def shortenState(self, country, state):
+        return self.country2state2short.get(country, {}).get(state, state)
+
+    def expandState(self, country, state):
+        return self.country2short2state.get(country, {}).get(state, state)
+
+
+class Location:
+    def __init__(self, string, locationKnowledge):
+        self.knowledge = locationKnowledge
+        self.original_string = string
+        self.city = None
+        self.state = None
+        self.country = None
+        self._parse(string)
+
+    def _parse(self, string):
+        elems = string.split(',')
+        elems = [elem.strip() for elem in elems]
+
+        if len(elems) == 1:
+            # print(elems[0])
+            self.city = elems[0]
+        elif len(elems) == 2:
+            self.city = elems[0]
+            self.country = elems[1]
+        elif len(elems) == 3:
+            self.city = elems[0]
+            self.state = elems[1]
+            self.country = elems[2]
+        else:
+            raise ValueError("Could not read address: {}".format(string))
+
+    def expandInformation(self):
+        self.state = self.knowledge.expandState(self.country, self.state)
+
+    def getString(self):
+        elems = [elem for elem in [self.city, self.state, self.country] if elem is not None]
+        return ', '.join(elems)
+
+
 def loadBibTex(filename, loadPreamble=False):
     if not (os.path.exists(filename) and os.path.isfile(filename)):
         raise FileNotFoundError(filename)
