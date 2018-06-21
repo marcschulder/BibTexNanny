@@ -88,6 +88,7 @@ class NannyConfig(ABC):
         self.incompleteNames = fallback
         self.inconsistentNames = fallback
         self.inconsistentLocations = fallback
+        self.inconsistentInferrableInfo = fallback
 
         self._setAnyMissingFieldsValue()
 
@@ -112,6 +113,7 @@ class NannyConfig(ABC):
         self.incompleteNames = self._getConfigValue(section, 'Incomplete Names')
         self.inconsistentNames = self._getConfigValue(section, 'Inconsistent Names')
         self.inconsistentLocations = self._getConfigValue(section, 'Inconsistent Locations')
+        self.inconsistentInferrableInfo = self._getConfigValue(section, 'Inconsistent Inferrable Information')
 
         self._setAnyMissingFieldsValue()
 
@@ -121,6 +123,128 @@ class NannyConfig(ABC):
     @abstractmethod
     def _getConfigValue(self, section, key, fallback=FALLBACK):
         pass
+
+
+class FieldInferrer:
+    TYPE2INPUT2INFERRABLE = {
+        'incollection':
+            {('booktitle', 'year'): ('address', 'month', 'editor', 'publisher')},
+        'inproceedings':
+            {('booktitle', 'year'): ('address', 'month', 'editor', 'organization', 'publisher')},
+    }
+
+    def __init__(self, entries):
+        self.type2input2information, self.type2input2field2conflicts = self._collectInformation(entries)
+        # for typ, input2field2conflicts in self.type2input2field2conflicts.items():
+        #     print(typ)
+        #     for inpt, field2conflicts in input2field2conflicts.items():
+        #         print('   ', inpt)
+        #         for field, conflicts in field2conflicts.items():
+        #             print('       ', field)
+        #             for conflict in conflicts:
+        #                 print('           ', conflict)
+
+    def _collectInformation(self, entries):
+        type2input2information = {}
+        type2input2field2conflicts = {}
+
+        for key, entry in entries.items():
+            INPUT2INFERRABLE = self.TYPE2INPUT2INFERRABLE.get(entry.typ)
+            if INPUT2INFERRABLE is not None:
+                for inputFields, inferrableFields in INPUT2INFERRABLE.items():
+                    inputValues = self._getAllFieldValues(entry, inputFields)
+
+                    if inputValues is not None:
+                        inferrableValueDict = self._getFieldValueDict(entry, inferrableFields)
+                        if inferrableValueDict:
+                            input2information = type2input2information.setdefault(entry.typ, {})
+                            existingInferrableDict = input2information.get(inputValues)
+                            if existingInferrableDict is not None:
+                                inferrableValueDict, mergeConflictDict = self._mergeFieldValueDicts(
+                                    existingInferrableDict, inferrableValueDict)
+                                if mergeConflictDict:
+                                    input2field2conflicts = type2input2field2conflicts.setdefault(entry.typ, {})
+                                    field2conflicts = input2field2conflicts.setdefault(inputValues, {})
+                                    for k, vs in mergeConflictDict.items():
+                                        conflictSet = field2conflicts.setdefault(k, set())
+                                        for v in vs:
+                                            if v is not None:
+                                                conflictSet.add(v)
+
+                            input2information[inputValues] = inferrableValueDict
+
+        # Clean up
+        type2input2information = self.removeNoneFromDict(type2input2information)
+        return type2input2information, type2input2field2conflicts
+
+    @staticmethod
+    def _getAllFieldValues(entry, fields):
+        fieldValueTuples = []
+        for field in fields:
+            value = entry.get(field)
+            if value is None:
+                return None
+            else:
+                fieldValueTuples.append((field, value))
+        return tuple(fieldValueTuples)
+
+    @staticmethod
+    def _getFieldValueDict(entry, fields):
+        field2value = {}
+        for field in fields:
+            value = entry.get(field)
+            if value is not None:
+                field2value[field] = value
+        return field2value
+
+    @staticmethod
+    def _mergeFieldValueDicts(dict1, dict2):
+        mergedDict = dict(dict1)
+        mergeConflicts = {}
+        for k, v in dict2.items():
+            if k in mergedDict:  # Key exists in both dicts
+                other_v = mergedDict[k]
+                if v != other_v:  # Value conflict detected
+                    # print('WARNING: Value conflict detected for field {}: "{}" vs "{}"'.format(k, v, other_v))
+                    mergedDict[k] = None
+                    mergeConflicts[k] = [other_v, v]
+            else:  # New key-value pair, add to dict
+                mergedDict[k] = v
+        return mergedDict, mergeConflicts
+
+    @classmethod
+    def removeNoneFromDict(cls, noneDict):
+        cleanedDict = {}
+        for k, v in noneDict.items():
+            if type(v) == dict:
+                v = cls.removeNoneFromDict(v)
+
+            if v is not None:
+                cleanedDict[k] = v
+
+        if cleanedDict:
+            return cleanedDict
+        else:
+            return None
+
+    def addInformation(self, entry, verbose=False):
+        INPUT2INFERRABLE = self.TYPE2INPUT2INFERRABLE.get(entry.typ)
+        input2information = self.type2input2information.get(entry.typ)
+        if INPUT2INFERRABLE is not None:
+            for inputFields, inferrableFields in INPUT2INFERRABLE.items():
+                inputValues = self._getAllFieldValues(entry, inputFields)
+                if inputValues is not None:
+                    # print(inputValues)
+                    infoDict = input2information.get(inputValues)
+                    # print(' ', infoDict)
+                    if infoDict is not None:
+                        for field, value in infoDict.items():
+                            if field in entry:
+                                pass
+                            else:
+                                if verbose:
+                                    print('Adding field "{}" to key "{}": {}'.format(field, entry.key, value))
+                                entry[field] = value
 
 
 def loadBibTex(filename, loadPreamble=False):
@@ -317,22 +441,3 @@ def findBadPageNumbers(entries, tolerateSingleHyphens=True):
         if not pageRE.match(pages):
             badEntries.append(entry)
     return badEntries
-
-def getInferableInformation(entries):
-    key2inputFields2inferredFields = OrderedDict
-    for key, entry in entries.items():
-        inputFields = ['booktitle', 'year']
-        inferrableFields = ['address', 'month', 'editor', 'organization', 'publisher']
-        if all([(field, field in entry) for field in inputFields]):
-            inputTuple = tuple([entry[field] for field in ['booktitle', 'year']])
-            inferredFields = []
-            for inferrableField in inferrableFields:
-                if inferrableField in entry:
-                    inferredFields.append((inferrableField, entry[inferrableField]))
-            if inferredFields:
-                inputFields2inferredFields
-
-        inputFields = ['journal', 'year', 'volume']
-        inferrableFields = ['month']
-
-

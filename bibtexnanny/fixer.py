@@ -102,25 +102,21 @@ def fixEntries(entries, config, show):
 
     # Duplicate titles
     if config.duplicateTitles:
-        duplicateTitles = nanny.findDuplicateTitles(entries)
+        # duplicateTitles = nanny.findDuplicateTitles(entries)
         print(NOT_IMPLEMENTED_PATTERN.format("duplicate titles"))
-
 
     # Missing fields #
     # Missing required fields
-    if config.missingRequiredFields:
-        print(NOT_IMPLEMENTED_PATTERN.format("missing required fields"))
-    # Missing optional fields
-    if config.missingOptionalFields:
-        print(NOT_IMPLEMENTED_PATTERN.format("missing optional fields"))
-
+    if config.anyMissingFields:
+        inferrer = nanny.FieldInferrer(entries)
         for key, entry in entries.items():
-            availability2fields = nanny.getFieldAvailability(entry)
-            missingOptionalFields = availability2fields[nanny.FIELD_IS_OPTIONAL_MISSING]
-            if show.missingOptionalFields and missingOptionalFields:
-                print(key, missingOptionalFields)
-        if show.missingOptionalFields:
-            print()
+            inferrer.addInformation(entry, verbose=show.anyMissingFields)
+
+        # if config.missingRequiredFields:
+        #     print(NOT_IMPLEMENTED_PATTERN.format("missing required fields"))
+        # # Missing optional fields
+        # if config.missingOptionalFields:
+        #     print(NOT_IMPLEMENTED_PATTERN.format("missing optional fields"))
 
     # Bad Formatting #
     # Unsecured uppercase characters in titles
@@ -179,7 +175,7 @@ def fixEntries(entries, config, show):
 def fixUnsecuredUppercase(text, unsecuredChars):
     unsecuredChars = set(unsecuredChars)
     fixed_chars = []
-    lastCharWasClosingCurlyBrace=False
+    lastCharWasClosingCurlyBrace = False
     for i, c in enumerate(text):
         if i in unsecuredChars:
             if lastCharWasClosingCurlyBrace:

@@ -42,7 +42,7 @@ def getEnumerationString(entries, quotes=None):
 
     else:
         first_entry = entries[0]
-        last_entry= entries[-1]
+        last_entry = entries[-1]
         remaining_entries = entries[1:-1]
 
         elems = [first_entry.key]
@@ -144,6 +144,10 @@ def checkConsistency(entries, config):
     # Inconsistent location names
     if config.inconsistentLocations:
         print(NOT_IMPLEMENTED_PATTERN.format("inconsistent location names"))
+
+    # Inconsistent inferrable information
+    if config.inconsistentInferrableInfo:
+        print(NOT_IMPLEMENTED_PATTERN.format("inconsistent inferrable information"))
 
 
 def main():
