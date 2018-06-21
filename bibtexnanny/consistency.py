@@ -17,8 +17,18 @@ NOT_IMPLEMENTED_PATTERN = "# Warning for {} not yet implemented.\n"
 class ConsistencyConfig(nanny.NannyConfig):
     SECTION = 'Consistency'
 
-    def _getConfigValue(self, section, key, fallback=True):
-        return section.getboolean(key, fallback=fallback)
+    FALLBACK_VALUE = True
+
+    def _getConfigValue(self, section, key, fallback=None):
+        value = section.getboolean(key, fallback=fallback)
+        # print(key, ':', value)
+
+        if value is None:
+            value = self.FALLBACK_VALUE
+            print('WARNING: Config contains no information for key "{}", value defaults to "{}"'.format(
+                key, self.FALLBACK_VALUE))
+
+        return value
 
 
 def getEnumerationString(entries, quotes=None):

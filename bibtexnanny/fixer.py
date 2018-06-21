@@ -25,6 +25,8 @@ class FixerConfig(nanny.NannyConfig):
     PROMPTFIX = 1
     NOFIX = 0
 
+    FALLBACK_VALUE = AUTOFIX
+
     CONFIGVALUE2INTERNAL = {'autofix': AUTOFIX,
                             'auto': AUTOFIX,
                             'yes': AUTOFIX,
@@ -40,9 +42,16 @@ class FixerConfig(nanny.NannyConfig):
                             False: NOFIX,
                             }
 
-    def _getConfigValue(self, section, key, fallback=True):
+    def _getConfigValue(self, section, key, fallback=None):
         orig_value = section.get(key, fallback=fallback)
         value = orig_value
+        # print(key, value, type(value))
+
+        if value is None:
+            value = self.FALLBACK_VALUE
+            print('WARNING: Config contains no information for key "{}", value defaults to "{}"'.format(
+                key, self.FALLBACK_VALUE))
+
         if type(value) == str:
             value = value.lower()
         try:
