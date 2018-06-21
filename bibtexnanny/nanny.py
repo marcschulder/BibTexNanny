@@ -194,7 +194,7 @@ def findDuplicateKeys(entries):
 
 
 def findDuplicateTitles(entries, ignoreCurlyBraces=True, ignoreCaps=True):
-    key2seen = {}
+    title2seenEntries = {}
     for key, entry in entries.items():
         title = entry["title"]
         if ignoreCurlyBraces:
@@ -203,14 +203,14 @@ def findDuplicateTitles(entries, ignoreCurlyBraces=True, ignoreCaps=True):
         if ignoreCaps:
             title = title.lower()
 
-        key2seen.setdefault(title, []).append(entry)
+        title2seenEntries.setdefault(title, []).append(entry)
 
-    key2duplicates = {}
-    for title, entries in key2seen.items():
+    title2duplicateEntries = {}
+    for title, entries in title2seenEntries.items():
         if len(entries) >= 2:
-            key2duplicates[title] = entries
+            title2duplicateEntries[title] = entries
 
-    return key2duplicates
+    return title2duplicateEntries
 
 
 def findUnsecuredUppercase(entries):
@@ -264,3 +264,22 @@ def findBadPageNumbers(entries, tolerateSingleHyphens=True):
         if not pageRE.match(pages):
             badEntries.append(entry)
     return badEntries
+
+def getInferableInformation(entries):
+    key2inputFields2inferredFields = OrderedDict
+    for key, entry in entries.items():
+        inputFields = ['booktitle', 'year']
+        inferrableFields = ['address', 'month', 'editor', 'organization', 'publisher']
+        if all([(field, field in entry) for field in inputFields]):
+            inputTuple = tuple([entry[field] for field in ['booktitle', 'year']])
+            inferredFields = []
+            for inferrableField in inferrableFields:
+                if inferrableField in entry:
+                    inferredFields.append((inferrableField, entry[inferrableField]))
+            if inferredFields:
+                inputFields2inferredFields
+
+        inputFields = ['journal', 'year', 'volume']
+        inferrableFields = ['month']
+
+
