@@ -32,7 +32,13 @@ def fixEntries(entries):
     print(NOT_IMPLEMENTED_PATTERN.format("missing required fields"))
     # Missing optional fields
     print(NOT_IMPLEMENTED_PATTERN.format("missing optional fields"))
+    for key, entry in entries.items():
+        availability2fields = nanny.getFieldAvailability(entry)
+        missingOptionalFields = availability2fields[nanny.FIELD_IS_OPTIONAL_MISSING]
+        if missingOptionalFields:
+            print(key, missingOptionalFields)
     print()
+    return
 
     # Bad Formatting #
     # Unsecured uppercase characters in titles
