@@ -74,7 +74,7 @@ TYPE2OPTIONAL_ALTERNATIVES = {'book': {'volume': 'number', 'number': 'volume'},
 
 class NannyConfig(ABC):
     SECTION = 'DEFAULT'
-    FALLBACK = True
+    FALLBACK = None
 
     def __init__(self, filename=None, fallback=FALLBACK):
         self.duplicateKeys = fallback
@@ -107,7 +107,7 @@ class NannyConfig(ABC):
         self.missingOptionalFields = self._getConfigValue(section, 'Missing Optional Fields')
         self.unsecuredTitleChars = self._getConfigValue(section, 'Unsecured Title Characters')
         self.unnecessaryBraces = self._getConfigValue(section, 'Unnecessary Braces')
-        self.badPageNumbers = self._getConfigValue(section, 'Bad numbers')
+        self.badPageNumbers = self._getConfigValue(section, 'Bad Page Numbers')
         self.inconsistentConferences = self._getConfigValue(section, 'Inconsistent Conferences')
         self.incompleteNames = self._getConfigValue(section, 'Incomplete Names')
         self.inconsistentNames = self._getConfigValue(section, 'Inconsistent Names')
