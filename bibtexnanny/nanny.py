@@ -318,6 +318,7 @@ def findBadPageNumbers(entries, tolerateSingleHyphens=True):
             badEntries.append(entry)
     return badEntries
 
+
 def getInferableInformation(entries):
     key2inputFields2inferredFields = OrderedDict
     for key, entry in entries.items():

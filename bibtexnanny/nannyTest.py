@@ -137,5 +137,3 @@ class TestFindUnsecuredUppercase(TestCase):
         key2goldChars = {DEFAULT_KEY: [1, 2, 3, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}
         key2unsecuredChars = nanny.findUnsecuredUppercase(parse(entryString))
         self.assertEqual(key2unsecuredChars, key2goldChars)
-
-
