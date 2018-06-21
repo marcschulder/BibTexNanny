@@ -7,7 +7,9 @@ Collection of functions used by various tools of the BibTexNanny toolkit.
 import sys
 import os
 import re
+import configparser
 from collections import OrderedDict
+from abc import ABC, abstractmethod
 
 from bibtexnanny.biblib import bib
 
@@ -68,6 +70,57 @@ TYPE2OPTIONAL_ALTERNATIVES = {'book': {'volume': 'number', 'number': 'volume'},
                               'inproceedings': {'volume': 'number', 'number': 'volume'},
                               'proceedings': {'volume': 'number', 'number': 'volume'},
                               }
+
+
+class NannyConfig(ABC):
+    SECTION = 'DEFAULT'
+    FALLBACK = True
+
+    def __init__(self, filename=None, fallback=FALLBACK):
+        self.duplicateKeys = fallback
+        self.duplicateTitles = fallback
+        self.missingRequiredFields = fallback
+        self.missingOptionalFields = fallback
+        self.unsecuredTitleChars = fallback
+        self.unnecessaryBraces = fallback
+        self.badPageNumbers = fallback
+        self.inconsistentConferences = fallback
+        self.incompleteNames = fallback
+        self.inconsistentNames = fallback
+        self.inconsistentLocations = fallback
+
+        self._setAnyMissingFieldsValue()
+
+        if filename is not None:
+            self.load(filename)
+
+    def load(self, filename):
+        config = configparser.ConfigParser()
+        config.read(filename)
+        self.setUpConfig(config)
+
+    def setUpConfig(self, config):
+        section = config[self.SECTION]
+        self.duplicateKeys = self._getConfigValue(section, 'Duplicate Keys')
+        self.duplicateTitles = self._getConfigValue(section, 'Duplicate Titles')
+        self.missingRequiredFields = self._getConfigValue(section, 'Missing Required Fields')
+        self.missingOptionalFields = self._getConfigValue(section, 'Missing Optional Fields')
+        self.unsecuredTitleChars = self._getConfigValue(section, 'Unsecured Title Characters')
+        self.unnecessaryBraces = self._getConfigValue(section, 'Unnecessary Braces')
+        self.badPageNumbers = self._getConfigValue(section, 'Bad numbers')
+        self.inconsistentConferences = self._getConfigValue(section, 'Inconsistent Conferences')
+        self.incompleteNames = self._getConfigValue(section, 'Incomplete Names')
+        self.inconsistentNames = self._getConfigValue(section, 'Inconsistent Names')
+        self.inconsistentLocations = self._getConfigValue(section, 'Inconsistent Locations')
+
+        self._setAnyMissingFieldsValue()
+
+    def _setAnyMissingFieldsValue(self):
+        self.anyMissingFields = self.missingRequiredFields or self.missingOptionalFields
+
+    @abstractmethod
+    def _getConfigValue(self, section, key, fallback=FALLBACK):
+        pass
 
 
 def loadBibTex(filename, loadPreamble=False):

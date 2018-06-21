@@ -11,7 +11,14 @@ from bibtexnanny import nanny
 __author__ = 'Marc Schulder'
 
 HEADLINE_PATTERN = "===== {} ====="
-NOT_IMPLEMENTED_PATTERN = "Warning for {} not yet implemented"
+NOT_IMPLEMENTED_PATTERN = "# Warning for {} not yet implemented.\n"
+
+
+class ConsistencyConfig(nanny.NannyConfig):
+    SECTION = 'Consistency'
+
+    def _getConfigValue(self, section, key, fallback=True):
+        return section.getboolean(key, fallback=fallback)
 
 
 def getEnumerationString(entries, quotes=None):
@@ -47,90 +54,109 @@ def getEnumerationString(entries, quotes=None):
         return ''.join(elems)
 
 
-def checkConsistency(entries):
+def checkConsistency(entries, config):
     # Check for Duplicates #
     # Duplicate keys
-    print(NOT_IMPLEMENTED_PATTERN.format("duplicate keys"))
-    # duplicateKeys = nanny.findDuplicateKeys(entries)
-    # if duplicateKeys:
-    #     print(HEADLINE_PATTERN.format("Duplicate Keys"))
-    #     for duplicateKey in duplicateKeys:
-    #         print("Found duplicate key:".format(duplicateKey))
-    #     print()
+    if config.duplicateKeys:
+        print(NOT_IMPLEMENTED_PATTERN.format("Duplicate Keys"))
+        # duplicateKeys = nanny.findDuplicateKeys(entries)
+        # if duplicateKeys:
+        #     print(HEADLINE_PATTERN.format("Duplicate Keys"))
+        #     for duplicateKey in duplicateKeys:
+        #         print("Found duplicate key:".format(duplicateKey))
+        #     print()
 
     # Duplicate titles
-    title2duplicateEntries = nanny.findDuplicateTitles(entries)
-    if title2duplicateEntries:
-        print(HEADLINE_PATTERN.format("Duplicate Keys"))
-        for duplicateTitle, duplicateTitleEntries in title2duplicateEntries.items():
-            keysString = getEnumerationString(duplicateTitleEntries)
-            firstTitle = duplicateTitleEntries[0][nanny.FIELD_TITLE]
-            print("Entries {} have the same title: {}".format(keysString, firstTitle))
-        print()
+    if config.duplicateTitles:
+        title2duplicateEntries = nanny.findDuplicateTitles(entries)
+        if title2duplicateEntries:
+            print(HEADLINE_PATTERN.format("Duplicate Titles"))
+            for duplicateTitle, duplicateTitleEntries in title2duplicateEntries.items():
+                keysString = getEnumerationString(duplicateTitleEntries)
+                firstTitle = duplicateTitleEntries[0][nanny.FIELD_TITLE]
+                print("Entries {} have the same title: {}".format(keysString, firstTitle))
+            print()
 
     # Missing fields #
-    key2availability = nanny.getFieldAvailabilities(entries)
-    if key2availability:
-        print(HEADLINE_PATTERN.format("Missing fields"))
-        for key, availability in key2availability.items():
-            missingRequiredFields = availability[nanny.FIELD_IS_REQUIRED_MISSING]
-            missingOptionalFields = availability[nanny.FIELD_IS_OPTIONAL_MISSING]
-            # if missingRequiredFields:
-            if missingRequiredFields or missingOptionalFields:
-                print("Entry {}".format(key))
-                if missingRequiredFields:
-                    print("  Required missing: ", ', '.join(missingRequiredFields))
-                if missingOptionalFields:
-                    print("  Optional missing: ", ', '.join(missingOptionalFields))
-        print()
+    if config.anyMissingFields:
+        key2availability = nanny.getFieldAvailabilities(entries)
+        if key2availability:
+            print(HEADLINE_PATTERN.format("Missing fields"))
+            for key, availability in key2availability.items():
+                missingRequiredFields = availability[nanny.FIELD_IS_REQUIRED_MISSING]
+                missingOptionalFields = availability[nanny.FIELD_IS_OPTIONAL_MISSING]
+
+                if config.anyMissingFields and (missingRequiredFields or missingOptionalFields):
+                    print("Entry {}".format(key))
+                    if config.missingRequiredFields and missingRequiredFields:
+                        print("  Required missing: ", ', '.join(missingRequiredFields))
+                    if config.missingOptionalFields and missingOptionalFields:
+                        print("  Optional missing: ", ', '.join(missingOptionalFields))
+            print()
 
     # Bad Formatting #
     # Unsecured uppercase characters in titles
-    key2unsecuredChars = nanny.findUnsecuredUppercase(entries)
-    if key2unsecuredChars:
-        print(HEADLINE_PATTERN.format("Titles with uppercase characters that are not secured by curly braces"))
-        for key in key2unsecuredChars:
-            title = entries[key][nanny.FIELD_TITLE]
-            print("Entry {} has unsecured uppercase characters: {}".format(key, title))
-        print()
+    if config.unsecuredTitleChars:
+        key2unsecuredChars = nanny.findUnsecuredUppercase(entries)
+        if key2unsecuredChars:
+            print(HEADLINE_PATTERN.format("Titles with uppercase characters that are not secured by curly braces"))
+            for key in key2unsecuredChars:
+                title = entries[key][nanny.FIELD_TITLE]
+                print("Entry {} has unsecured uppercase characters: {}".format(key, title))
+            print()
 
     # Unnecessary curly braces
-    print(NOT_IMPLEMENTED_PATTERN.format("unnecessary curly braces"))
+    if config.unnecessaryBraces:
+        print(NOT_IMPLEMENTED_PATTERN.format("unnecessary curly braces"))
 
     # Bad page numbers
-    badPageNumberEntries = nanny.findBadPageNumbers(entries, tolerateSingleHyphens=False)
-    if badPageNumberEntries:
-        print(HEADLINE_PATTERN.format("Titles with badly formatted page numbers"))
-        for entry in badPageNumberEntries:
-            print("Entry {} has bad page number format: {}".format(entry.key, entry[nanny.FIELD_PAGES]))
-        print()
+    if config.badPageNumbers:
+        badPageNumberEntries = nanny.findBadPageNumbers(entries, tolerateSingleHyphens=False)
+        if badPageNumberEntries:
+            print(HEADLINE_PATTERN.format("Titles with badly formatted page numbers"))
+            for entry in badPageNumberEntries:
+                print("Entry {} has bad page number format: {}".format(entry.key, entry[nanny.FIELD_PAGES]))
+            print()
 
     # Inconsistent Formatting #
     # Inconsistent names for conferences
-    print(NOT_IMPLEMENTED_PATTERN.format("inconsistent names for conferences"))
+    if config.inconsistentConferences:
+        print(NOT_IMPLEMENTED_PATTERN.format("inconsistent names for conferences"))
 
     # Incomplete name initials formatting
-    print(NOT_IMPLEMENTED_PATTERN.format("incomplete name initials formatting"))
+    if config.incompleteNames:
+        print(NOT_IMPLEMENTED_PATTERN.format("incomplete name initials formatting"))
 
     # Inconsistent name initials formatting
-    print(NOT_IMPLEMENTED_PATTERN.format("inconsistent name initials formatting"))
+    if config.inconsistentNames:
+        print(NOT_IMPLEMENTED_PATTERN.format("inconsistent name initials formatting"))
 
     # Inconsistent location names
-    print(NOT_IMPLEMENTED_PATTERN.format("inconsistent names for conferences"))
+    if config.inconsistentLocations:
+        print(NOT_IMPLEMENTED_PATTERN.format("inconsistent location names"))
 
 
 def main():
     parser = argparse.ArgumentParser(description='Check the consistency of BibTeX entries.')
     parser.add_argument('bibtexfile')
     parser.add_argument('-a', '--aux')
+    parser.add_argument('-c', '--config')
     # TODO: Allow multiple bibtex files
     args = parser.parse_args()
 
+    # Load BibTex file
     entries = nanny.loadBibTex(args.bibtexfile)
+
+    # Load auxiliary file
     if args.aux:
         keyWhitelist = nanny.loadCitedKeys(args.aux)
         entries = nanny.filterEntries(entries, keyWhitelist)
-    checkConsistency(entries)
+
+    # Load config file
+    config = ConsistencyConfig(args.config)
+
+    # Processing
+    checkConsistency(entries, config)
 
 
 if __name__ == '__main__':
