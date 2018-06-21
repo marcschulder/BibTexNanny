@@ -37,13 +37,16 @@ The following fixes and changes should be made to _biblib_:
 	- [ ] Different names for conferences (see _dictionary of conference names_)
 	- [ ] Name initials formatting
 	- [ ] Location names
+		- [ ] Indicate when there is a country without a city
+		- [ ] Indicate when there is a city without a country
+		- [ ] States missing from US locations
 	- [ ] Inferrable information for conferences/journals is inconsistent
 - [ ] Allow limiting search to citations found in aux file
 
 # BibTex Fixer
 
-- [x] **Infer fields from other entries**
-	- [ ] **Basic inference functionality**
+- [ ] **Infer fields from other entries**
+	- [x] _**Basic inference functionality**_
 	- [ ] Add more inferrable fields (see _Field Inference_)
 	- [ ] Add functionality for mapping information across types (e.g. from _proceeding_ to _inproceedings_)
 - [ ] **Fix inconstistent fields**
@@ -52,8 +55,8 @@ The following fixes and changes should be made to _biblib_:
 	- [ ] Make locations more informative (City, [State], Country)
 		- [ ] Add missing country
 		- [ ] Add missing city
-		- [ ] Add state (always or only USA?)
-		- [ ] Extend state initials to full state name
+		- [ ] Add state (USA and Canada)
+		- [x] Extend state initials to full state name
 	- [ ] Have consistent file order
 - [ ] **Fix** **formatting**
 	- [x] Add wraps around capitalised characters in name field
