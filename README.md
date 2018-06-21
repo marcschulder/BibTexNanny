@@ -5,12 +5,16 @@ BibTexNanny is a tool to check the consistency of BibTex files, fix common mista
 
 # BibTex Parser
 
-- [x] Find existing parser
-	- [Biblib](https://github.com/aclements/biblib) looks promissing
-	- [x] Try out Biblib
-- [ ] Add BibDesk-compatibility mode for BibTex output
-- [ ] Fix issues with loading bad month information
-- [ ] Add ability to handle duplicate keys
+BibTexNanny uses [biblib](https://github.com/aclements/biblib) to parse and generate BibTex files.
+
+The following fixes and changes should be made to _biblib_:
+
+	- [x] Add BibDesk-compatibility mode for BibTex output
+	- [ ] Fix issues with loading bad month information
+		- _Can't replicate anymore, not sure what changed._
+	- [ ] Add ability to handle duplicate keys
+
+
 
 # BibTex file consistency checker
 
@@ -27,6 +31,7 @@ BibTexNanny is a tool to check the consistency of BibTex files, fix common mista
 	- [x] Warnings for badly formatted in page numbers
 	- [ ] Warning for all-caps texts
 	- [ ] Notice bad months
+	- [ ] Check if desired key format is followed
 - [ ] Warnings for **inconsistent formatting**
 	- [ ] Different names for conferences (see _dictionary of conference names_)
 	- [ ] Name initials formatting
@@ -76,6 +81,101 @@ BibTexNanny is a tool to check the consistency of BibTex files, fix common mista
 	- [ ] Shorten state to initials
 	- [ ] Copy location to address (even though technically it is incorrect)
 
+# Auxiliary
+
+
+## **Dictionary of conference names**
+
+- [ ] Allow full name, name variation, short name
+- [ ] Names should allow for number placeholder
+- [ ] How to link regularly named conferences with years where they were held in conjunction with something?
+- [ ] **Additional script** to suggest possible name variations
+
+## **Key formatting**
+
+
+### Relevant factors for key formatting
+
+- [ ] First author last name
+	- [ ] capitalised
+	- [ ] lower caps
+- [ ] Year
+- [ ] Word from Title
+	- [ ] capitalised
+	- [ ] lower caps
+	- [ ] all caps
+- [ ] Disambiguating characters
+	- [ ] lowercase a,b,c
+
+### Common formats
+
+1. lastnameYEAR
+2. LastnameYEAR
+3. LastnameYEARtitleword
+4. LastnameYEARdisambig
+5. TITLEWORD
+6. LastnameYEAR or TITLEWORD
+
+### How to choose format
+
+1. Number of hardcoded options
+	- Easy to implement, little flexibility
+2. RegEx
+	- Easy to implement, flexible, but limited functionality (can't check other fields)
+	- Actually, if you use named groups, you could use those names to trigger additional checks for them.
+3. Custom format
+	- Lots of work to implement, full functionality, probably quite flexible
+
+# BibTexNanny Input Parameters
+
+
+## Input methods
+
+- [x] Use Python's _configparser_, which allows INI-like config files
+
+## Internal processing
+
+1. Dict
+	- Straightforward, but need to keep the key strings straight
+2. Custom object with lots of boolean fields
+	- More design effort, but probably more flexible
+	- Should have different class for each Nanny component
+		- As the tasks overlap considerably, there should be a NannyConfig superclass and inherriting classes for the components.
+		- Accessing config info should be done via functions, not fields, to allow custom processing of the stored information
+
+## Required states for custom variables
+
+
+### Consistency checker
+
+- [x] True _(check value)_
+- [x] False _(don't check value)_
+
+### Fixer
+
+- [x] True/Autofix/Auto _(autofix value)_
+- [x] Tryfix/Try _(autofix if trivial, otherwise prompt to fix)_
+- [x] Promptfix/Prompt _(Prompt to fix)_
+- [x] False _(don't check value)_
+
+### Consistency + Fixer
+
+How information for both scripts can be given in the same config file
+
+- [x] Single value for both (_Try_ and _Prompt_ are treated as _True_)
+- [x] ~~Tuple: False,Tryfix (CONSISTENCY,FIXER)~~
+- [x] ~~Variables for only one of the two configs, e.g. _duplicateKeys-consistency_~~
+- [x] Different sections for giving instructions for both or just either
+
+### Simplifier
+
+Should have separate config files.
+
+- [ ] Blacklist: List fields that should be removed
+- [ ] Whitelist List only the fields that are wanted
+- [ ] Variables for conversion functions
+
+# ============================================================
 
 
 # Interface
@@ -115,13 +215,6 @@ BibTexNanny is a tool to check the consistency of BibTex files, fix common mista
 	- Fixer config file
 	- Simplifier config file
 
-# **Dictionary of conference names**
-
-- [ ] Allow full name, name variation, short name
-- [ ] Names should allow for number placeholder
-- [ ] How to link regularly named conferences with years where they were held in conjunction with something?
-- [ ] **Additional script** to suggest possible name variations
-
 # BibTex field requirements
 
 We need to be able to check the following aspects for fields:
@@ -152,7 +245,7 @@ We need to be able to check the following aspects for fields:
 
 
 
-# [Wikipedia BibTex Information](https://en.wikipedia.org/wiki/BibTeX)
+# Wikipedia BibTex Information
 
 The following information is taken from the [Wikipedia BibTex article](https://en.wikipedia.org/wiki/BibTeX).
 
@@ -406,7 +499,8 @@ The field overriding the default type of publication (e.g. "Research Note" for t
 
 The volume of a journal or multi-volume book
 
-year
+
+### year
 
 The year of publication (or, if unpublished, the year of creation)
 
