@@ -9,12 +9,12 @@ BibTexNanny uses [biblib](https://github.com/aclements/biblib) to parse and gene
 
 The following fixes and changes should be made to _biblib_:
 
-	- [x] Add BibDesk-compatibility mode for BibTex output
-	- [ ] Fix issues with loading bad month information
-		- _Can't replicate anymore, not sure what changed._
-	- [ ] Add ability to handle duplicate keys
-
-
+- [x] Add BibDesk-compatibility mode for BibTex output
+- [ ] Fix issues with loading bad month information
+	- _Can't replicate anymore, not sure what changed._
+- [ ] Add ability to handle duplicate keys
+- [ ] Prevent BibTex Parser from dropping metadata and comment lines
+	- [x] BibTexNanny internal work-around
 
 # BibTex file consistency checker
 
@@ -28,6 +28,7 @@ The following fixes and changes should be made to _biblib_:
 - [ ] Warnings for **bad formatting**
 	- [x] Warnings for non-secured capitalisation in name field
 	- [ ] Warnings for unnecessary {}-wraps
+		- Curly braces are not only for uppercase characters but also for encoding special characters, e.g. \'{e} to get é
 	- [x] Warnings for badly formatted in page numbers
 	- [ ] Warning for all-caps texts
 	- [ ] Notice bad months
@@ -36,12 +37,15 @@ The following fixes and changes should be made to _biblib_:
 	- [ ] Different names for conferences (see _dictionary of conference names_)
 	- [ ] Name initials formatting
 	- [ ] Location names
+	- [ ] Inferrable information for conferences/journals is inconsistent
 - [ ] Allow limiting search to citations found in aux file
 
 # BibTex Fixer
 
-- [ ] **Auto-add fields**
-	- [ ] If conference and year match with more complete entry, add location
+- [x] **Infer fields from other entries**
+	- [ ] **Basic inference functionality**
+	- [ ] Add more inferrable fields (see _Field Inference_)
+	- [ ] Add functionality for mapping information across types (e.g. from _proceeding_ to _inproceedings_)
 - [ ] **Fix inconstistent fields**
 	- [ ] Replace conference name variations with main name (see _dictionary of conference names_)
 	- [ ] Expand name initials to full names
@@ -126,6 +130,19 @@ The following fixes and changes should be made to _biblib_:
 3. Custom format
 	- Lots of work to implement, full functionality, probably quite flexible
 
+# Field Inference
+
+- [ ] **author**: journal + year + volume => month
+- [ ] **author**: journal + year + month => volume
+- [ ] **book**: booktitle + year +volume/number => **inbook**: author, editor,publisher, series, edition, month, publisher
+- [ ] **book**: booktitle + year +volume/number => **incollection:** editor, publisher, series, edition, month, publisher
+- [ ] **conference**: booktitle + year => address, month, editor, organization, publisher
+- [ ] **incbook**: title + year => address, month, editor, publisher
+- [x] **incollection**: booktitle + year => address, month, editor, publisher
+- [x] i**nproceedings**: booktitle + year => address, month, editor, organization, publisher
+- [ ] **proceedings**: booktitle + year => i**nproceedings: **address, month, editor, organization, publisher
+- [ ] If proceedings title contains an index (e.g. "Proceedings of the 5th Conference on Examples") we can infer year and all other pieces of information from it.
+
 # BibTexNanny Input Parameters
 
 
@@ -135,7 +152,7 @@ The following fixes and changes should be made to _biblib_:
 
 ## Internal processing
 
-1. Dict
+1. ~~Dict~~
 	- Straightforward, but need to keep the key strings straight
 2. Custom object with lots of boolean fields
 	- More design effort, but probably more flexible
@@ -309,7 +326,7 @@ _Optional fields:_ editor, volume/number, series, type, chapter, pages, address
 
 An article in a conference proceedings.
 
-_Required fields: _author, title, booktitle, year
+_Required fields:_ author, title, booktitle, year
 
 _Optional fields:_ editor, volume/number, series, pages, address, month, organization, publisher, note, key
 
