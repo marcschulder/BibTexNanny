@@ -227,6 +227,25 @@ class FieldInferrer:
         else:
             return None
 
+    def addInformation(self, entry, verbose=False):
+        INPUT2INFERRABLE = self.TYPE2INPUT2INFERRABLE.get(entry.typ)
+        input2information = self.type2input2information.get(entry.typ)
+        if INPUT2INFERRABLE is not None:
+            for inputFields, inferrableFields in INPUT2INFERRABLE.items():
+                inputValues = self._getAllFieldValues(entry, inputFields)
+                if inputValues is not None:
+                    # print(inputValues)
+                    infoDict = input2information.get(inputValues)
+                    # print(' ', infoDict)
+                    if infoDict is not None:
+                        for field, value in infoDict.items():
+                            if field in entry:
+                                pass
+                            else:
+                                if verbose:
+                                    print('Adding field "{}" to key "{}": {}'.format(field, entry.key, value))
+                                entry[field] = value
+
 
 def loadBibTex(filename, loadPreamble=False):
     if not (os.path.exists(filename) and os.path.isfile(filename)):
