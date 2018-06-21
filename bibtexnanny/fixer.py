@@ -29,6 +29,7 @@ class FixerConfig(nanny.NannyConfig):
                             'auto': AUTOFIX,
                             'yes': AUTOFIX,
                             'true': AUTOFIX,
+                            True: AUTOFIX,
                             'tryfix': TRYFIX,
                             'try': TRYFIX,
                             'promptfix': PROMPTFIX,
@@ -36,10 +37,19 @@ class FixerConfig(nanny.NannyConfig):
                             'nofix': NOFIX,
                             'no': NOFIX,
                             'false': NOFIX,
+                            False: NOFIX,
                             }
 
     def _getConfigValue(self, section, key, fallback=True):
-        return section.get(key, vars=self.CONFIGVALUE2INTERNAL, fallback=fallback)
+        orig_value = section.get(key, fallback=fallback)
+        value = orig_value
+        if type(value) == str:
+            value = value.lower()
+        try:
+            return self.CONFIGVALUE2INTERNAL[value]
+        except KeyError:
+            raise ValueError('Unknown config value: "{}"'.format(orig_value))
+
 
 def fixEntries(entries, config):
     # Check for Duplicates #
