@@ -14,72 +14,107 @@ __author__ = 'Marc Schulder'
 HEADLINE_PATTERN = "===== {} ====="
 NOT_IMPLEMENTED_PATTERN = "Auto-fix for {} not yet implemented"
 
-RE_NOTPAGES_CHAR = re.compile(r'[^0-9\-\+\,]+')
+RE_NOTPAGES_CHAR = re.compile(r'[^0-9\-+,]+')
 
 
-def fixEntries(entries):
+class FixerConfig(nanny.NannyConfig):
+    SECTION = 'Fixer'
+
+    AUTOFIX = 3
+    TRYFIX = 2
+    PROMPTFIX = 1
+    NOFIX = 0
+
+    CONFIGVALUE2INTERNAL = {'autofix': AUTOFIX,
+                            'auto': AUTOFIX,
+                            'yes': AUTOFIX,
+                            'true': AUTOFIX,
+                            'tryfix': TRYFIX,
+                            'try': TRYFIX,
+                            'promptfix': PROMPTFIX,
+                            'prompt': PROMPTFIX,
+                            'nofix': NOFIX,
+                            'no': NOFIX,
+                            'false': NOFIX,
+                            }
+
+    def _getConfigValue(self, section, key, fallback=True):
+        return section.get(key, vars=self.CONFIGVALUE2INTERNAL, fallback=fallback)
+
+def fixEntries(entries, config):
     # Check for Duplicates #
     # Duplicate keys
-    print(NOT_IMPLEMENTED_PATTERN.format("duplicate keys"))
+    if config.duplicateKeys:
+        print(NOT_IMPLEMENTED_PATTERN.format("duplicate keys"))
 
     # Duplicate titles
-    duplicateTitles = nanny.findDuplicateTitles(entries)
-    print(NOT_IMPLEMENTED_PATTERN.format("duplicate titles"))
+    if config.duplicateTitles:
+        duplicateTitles = nanny.findDuplicateTitles(entries)
+        print(NOT_IMPLEMENTED_PATTERN.format("duplicate titles"))
 
 
     # Missing fields #
     # Missing required fields
-    print(NOT_IMPLEMENTED_PATTERN.format("missing required fields"))
+    if config.missingRequiredFields:
+        print(NOT_IMPLEMENTED_PATTERN.format("missing required fields"))
     # Missing optional fields
-    print(NOT_IMPLEMENTED_PATTERN.format("missing optional fields"))
-    for key, entry in entries.items():
-        availability2fields = nanny.getFieldAvailability(entry)
-        missingOptionalFields = availability2fields[nanny.FIELD_IS_OPTIONAL_MISSING]
-        if missingOptionalFields:
-            print(key, missingOptionalFields)
-    print()
-    return
+    if config.missingOptionalFields:
+        print(NOT_IMPLEMENTED_PATTERN.format("missing optional fields"))
+
+    if config.anyMissingFields:
+        for key, entry in entries.items():
+            availability2fields = nanny.getFieldAvailability(entry)
+            missingOptionalFields = availability2fields[nanny.FIELD_IS_OPTIONAL_MISSING]
+            if missingOptionalFields:
+                print(key, missingOptionalFields)
+        print()
 
     # Bad Formatting #
     # Unsecured uppercase characters in titles
-    key2unsecuredChars = nanny.findUnsecuredUppercase(entries)
-    if key2unsecuredChars:
-        print(HEADLINE_PATTERN.format("Securing uppercase characters in titles with curly braces"))
-        for key, unsecuredChars in key2unsecuredChars.items():
-            entry = entries[key]
-            original_title = entry[nanny.FIELD_TITLE]
-            fixed_title = fixUnsecuredUppercase(original_title, unsecuredChars)
-            entry[nanny.FIELD_TITLE] = fixed_title
-            print("Fixed {} unsecured uppercase characters in entry {}".format(len(unsecuredChars), key))
-            print("  Before: {}".format(original_title))
-            print("  After:  {}".format(fixed_title))
-        print()
+    if config.unsecuredTitleChars:
+        key2unsecuredChars = nanny.findUnsecuredUppercase(entries)
+        if key2unsecuredChars:
+            print(HEADLINE_PATTERN.format("Securing uppercase characters in titles with curly braces"))
+            for key, unsecuredChars in key2unsecuredChars.items():
+                entry = entries[key]
+                original_title = entry[nanny.FIELD_TITLE]
+                fixed_title = fixUnsecuredUppercase(original_title, unsecuredChars)
+                entry[nanny.FIELD_TITLE] = fixed_title
+                print("Fixed {} unsecured uppercase characters in entry {}".format(len(unsecuredChars), key))
+                print("  Before: {}".format(original_title))
+                print("  After:  {}".format(fixed_title))
+            print()
 
     # Unnecessary curly braces
-    print(NOT_IMPLEMENTED_PATTERN.format("unnecessary curly braces"))
+    if config.unnecessaryBraces:
+        print(NOT_IMPLEMENTED_PATTERN.format("unnecessary curly braces"))
 
     # Bad page number hyphens
-    badPageNumberEntries = nanny.findBadPageNumbers(entries)
-    if badPageNumberEntries:
-        print(HEADLINE_PATTERN.format("Fixing page numbers"))
-        for entry in badPageNumberEntries:
-            original_pages = entry[nanny.FIELD_PAGES]
-            fixed_pages = fixBadPageNumbers(original_pages)
-            entry[nanny.FIELD_PAGES] = fixed_pages
-            print("Fixed page numbers for entry {}".format(entry.key))
-            print("  Before: {}".format(original_pages))
-            print("  After:  {}".format(fixed_pages))
-        print()
+    if config.badPageNumbers:
+        badPageNumberEntries = nanny.findBadPageNumbers(entries)
+        if badPageNumberEntries:
+            print(HEADLINE_PATTERN.format("Fixing page numbers"))
+            for entry in badPageNumberEntries:
+                original_pages = entry[nanny.FIELD_PAGES]
+                fixed_pages = fixBadPageNumbers(original_pages)
+                entry[nanny.FIELD_PAGES] = fixed_pages
+                print("Fixed page numbers for entry {}".format(entry.key))
+                print("  Before: {}".format(original_pages))
+                print("  After:  {}".format(fixed_pages))
+            print()
 
     # Inconsistent Formatting #
     # Inconsistent names for conferences
-    print(NOT_IMPLEMENTED_PATTERN.format("inconsistent names for conferences"))
+    if config.inconsistentConferences:
+        print(NOT_IMPLEMENTED_PATTERN.format("inconsistent names for conferences"))
 
     # Inconsistent name initials formatting
-    print(NOT_IMPLEMENTED_PATTERN.format("inconsistent name initials formatting"))
+    if config.inconsistentNames:
+        print(NOT_IMPLEMENTED_PATTERN.format("inconsistent name initials formatting"))
 
     # Inconsistent location names
-    print(NOT_IMPLEMENTED_PATTERN.format("inconsistent names for conferences"))
+    if config.inconsistentLocations:
+        print(NOT_IMPLEMENTED_PATTERN.format("inconsistent names for conferences"))
 
 
 def fixUnsecuredUppercase(text, unsecuredChars):
@@ -116,15 +151,26 @@ def main():
     parser.add_argument('input')
     parser.add_argument('output')
     parser.add_argument('-a', '--aux')
+    parser.add_argument('-c', '--config')
 
     args = parser.parse_args()
 
+    # Load BibTex file
     entries, preamble = nanny.loadBibTex(args.input, loadPreamble=True)
+
+    # Load auxiliary file
     all_entries = entries
     if args.aux:
         keyWhitelist = nanny.loadCitedKeys(args.aux)
         entries = nanny.filterEntries(entries, keyWhitelist)
-    fixEntries(entries)
+
+    # Load config file
+    config = FixerConfig(args.config)
+
+    # Processing
+    fixEntries(entries, config)
+
+    # Save fixed BibTex file
     nanny.saveBibTex(args.output, all_entries, preamble,
                      month_to_macro=True, wrap_width=None, bibdesk_compatible=True)
 
