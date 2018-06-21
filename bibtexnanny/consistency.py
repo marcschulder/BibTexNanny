@@ -145,6 +145,10 @@ def checkConsistency(entries, config):
     if config.inconsistentLocations:
         print(NOT_IMPLEMENTED_PATTERN.format("inconsistent location names"))
 
+    # Inconsistent inferrable information
+    if config.inconsistentInferrableInfo:
+        print(NOT_IMPLEMENTED_PATTERN.format("inconsistent inferrable information"))
+
 
 def main():
     parser = argparse.ArgumentParser(description='Check the consistency of BibTeX entries.')

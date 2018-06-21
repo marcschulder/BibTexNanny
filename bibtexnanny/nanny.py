@@ -88,6 +88,7 @@ class NannyConfig(ABC):
         self.incompleteNames = fallback
         self.inconsistentNames = fallback
         self.inconsistentLocations = fallback
+        self.inconsistentInferrableInfo = fallback
 
         self._setAnyMissingFieldsValue()
 
@@ -112,6 +113,7 @@ class NannyConfig(ABC):
         self.incompleteNames = self._getConfigValue(section, 'Incomplete Names')
         self.inconsistentNames = self._getConfigValue(section, 'Inconsistent Names')
         self.inconsistentLocations = self._getConfigValue(section, 'Inconsistent Locations')
+        self.inconsistentInferrableInfo = self._getConfigValue(section, 'Inconsistent Inferrable Information')
 
         self._setAnyMissingFieldsValue()
 
