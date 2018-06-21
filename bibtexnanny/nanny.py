@@ -317,23 +317,3 @@ def findBadPageNumbers(entries, tolerateSingleHyphens=True):
         if not pageRE.match(pages):
             badEntries.append(entry)
     return badEntries
-
-
-def getInferableInformation(entries):
-    key2inputFields2inferredFields = OrderedDict
-    for key, entry in entries.items():
-        inputFields = ['booktitle', 'year']
-        inferrableFields = ['address', 'month', 'editor', 'organization', 'publisher']
-        if all([(field, field in entry) for field in inputFields]):
-            inputTuple = tuple([entry[field] for field in ['booktitle', 'year']])
-            inferredFields = []
-            for inferrableField in inferrableFields:
-                if inferrableField in entry:
-                    inferredFields.append((inferrableField, entry[inferrableField]))
-            if inferredFields:
-                inputFields2inferredFields
-
-        inputFields = ['journal', 'year', 'volume']
-        inferrableFields = ['month']
-
-
