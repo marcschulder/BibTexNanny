@@ -59,10 +59,10 @@ def checkConsistency(entries):
     #     print()
 
     # Duplicate titles
-    duplicateTitles = nanny.findDuplicateTitles(entries)
-    if duplicateTitles:
+    title2duplicateEntries = nanny.findDuplicateTitles(entries)
+    if title2duplicateEntries:
         print(HEADLINE_PATTERN.format("Duplicate Keys"))
-        for duplicateTitle, duplicateTitleEntries in duplicateTitles.items():
+        for duplicateTitle, duplicateTitleEntries in title2duplicateEntries.items():
             keysString = getEnumerationString(duplicateTitleEntries)
             firstTitle = duplicateTitleEntries[0][nanny.FIELD_TITLE]
             print("Entries {} have the same title: {}".format(keysString, firstTitle))
@@ -75,13 +75,23 @@ def checkConsistency(entries):
         for key, availability in key2availability.items():
             missingRequiredFields = availability[nanny.FIELD_IS_REQUIRED_MISSING]
             missingOptionalFields = availability[nanny.FIELD_IS_OPTIONAL_MISSING]
-            if missingRequiredFields:
-            # if missingRequiredFields or missingOptionalFields:
+            # if missingRequiredFields:
+            if missingRequiredFields or missingOptionalFields:
                 print("Entry {}".format(key))
                 if missingRequiredFields:
                     print("  Required missing: ", ', '.join(missingRequiredFields))
                 if missingOptionalFields:
                     print("  Optional missing: ", ', '.join(missingOptionalFields))
+        print()
+
+    # Bad Formatting #
+    # Unsecured uppercase characters in titles
+    key2unsecuredChars = nanny.findUnsecuredUppercase(entries)
+    if key2unsecuredChars:
+        print(HEADLINE_PATTERN.format("Titles with uppercase characters that are not secured by curly braces"))
+        for key in key2unsecuredChars:
+            title = entries[key][nanny.FIELD_TITLE]
+            print("Entry {} has unsecured uppercase characters: {}".format(key, title))
         print()
 
     # Unnecessary curly braces
@@ -98,6 +108,9 @@ def checkConsistency(entries):
     # Inconsistent Formatting #
     # Inconsistent names for conferences
     print(NOT_IMPLEMENTED_PATTERN.format("inconsistent names for conferences"))
+
+    # Incomplete name initials formatting
+    print(NOT_IMPLEMENTED_PATTERN.format("incomplete name initials formatting"))
 
     # Inconsistent name initials formatting
     print(NOT_IMPLEMENTED_PATTERN.format("inconsistent name initials formatting"))
