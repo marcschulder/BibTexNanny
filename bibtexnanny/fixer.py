@@ -60,7 +60,41 @@ class FixerConfig(nanny.NannyConfig):
             raise ValueError('Unknown config value: "{}"'.format(orig_value))
 
 
-def fixEntries(entries, config):
+class FixerSilentModeConfig(nanny.NannyConfig):
+    SECTION = 'Fixer Silent Mode'
+
+    SHOW = True
+    HIDE = False
+
+    FALLBACK_VALUE = SHOW
+
+    CONFIGVALUE2INTERNAL = {'show': SHOW,
+                            'true': SHOW,
+                            True: SHOW,
+                            'hide': HIDE,
+                            'false': HIDE,
+                            False: HIDE,
+                            }
+
+    def _getConfigValue(self, section, key, fallback=None):
+        orig_value = section.get(key, fallback=fallback)
+        value = orig_value
+        # print(key, ':', value)
+
+        if value is None:
+            value = self.FALLBACK_VALUE
+            print('WARNING: Config contains no information for key "{}", value defaults to "{}"'.format(
+                key, self.FALLBACK_VALUE))
+
+        if type(value) == str:
+            value = value.lower()
+        try:
+            return self.CONFIGVALUE2INTERNAL[value]
+        except KeyError:
+            raise ValueError('Unknown config value: "{}"'.format(orig_value))
+
+
+def fixEntries(entries, config, show):
     # Check for Duplicates #
     # Duplicate keys
     if config.duplicateKeys:
@@ -80,29 +114,32 @@ def fixEntries(entries, config):
     if config.missingOptionalFields:
         print(NOT_IMPLEMENTED_PATTERN.format("missing optional fields"))
 
-    if config.anyMissingFields:
         for key, entry in entries.items():
             availability2fields = nanny.getFieldAvailability(entry)
             missingOptionalFields = availability2fields[nanny.FIELD_IS_OPTIONAL_MISSING]
-            if missingOptionalFields:
+            if show.missingOptionalFields and missingOptionalFields:
                 print(key, missingOptionalFields)
-        print()
+        if show.missingOptionalFields:
+            print()
 
     # Bad Formatting #
     # Unsecured uppercase characters in titles
     if config.unsecuredTitleChars:
         key2unsecuredChars = nanny.findUnsecuredUppercase(entries)
         if key2unsecuredChars:
-            print(HEADLINE_PATTERN.format("Securing uppercase characters in titles with curly braces"))
+            if show.unsecuredTitleChars:
+                print(HEADLINE_PATTERN.format("Securing uppercase characters in titles with curly braces"))
             for key, unsecuredChars in key2unsecuredChars.items():
                 entry = entries[key]
                 original_title = entry[nanny.FIELD_TITLE]
                 fixed_title = fixUnsecuredUppercase(original_title, unsecuredChars)
                 entry[nanny.FIELD_TITLE] = fixed_title
-                print("Fixed {} unsecured uppercase characters in entry {}".format(len(unsecuredChars), key))
-                print("  Before: {}".format(original_title))
-                print("  After:  {}".format(fixed_title))
-            print()
+                if show.unsecuredTitleChars:
+                    print("Fixed {} unsecured uppercase characters in entry {}".format(len(unsecuredChars), key))
+                    print("  Before: {}".format(original_title))
+                    print("  After:  {}".format(fixed_title))
+            if show.unsecuredTitleChars:
+                print()
 
     # Unnecessary curly braces
     if config.unnecessaryBraces:
@@ -112,15 +149,18 @@ def fixEntries(entries, config):
     if config.badPageNumbers:
         badPageNumberEntries = nanny.findBadPageNumbers(entries)
         if badPageNumberEntries:
-            print(HEADLINE_PATTERN.format("Fixing page numbers"))
+            if show.badPageNumbers:
+                print(HEADLINE_PATTERN.format("Fixing page numbers"))
             for entry in badPageNumberEntries:
                 original_pages = entry[nanny.FIELD_PAGES]
                 fixed_pages = fixBadPageNumbers(original_pages)
                 entry[nanny.FIELD_PAGES] = fixed_pages
-                print("Fixed page numbers for entry {}".format(entry.key))
-                print("  Before: {}".format(original_pages))
-                print("  After:  {}".format(fixed_pages))
-            print()
+                if show.badPageNumbers:
+                    print("Fixed page numbers for entry {}".format(entry.key))
+                    print("  Before: {}".format(original_pages))
+                    print("  After:  {}".format(fixed_pages))
+            if show.badPageNumbers:
+                print()
 
     # Inconsistent Formatting #
     # Inconsistent names for conferences
@@ -185,9 +225,10 @@ def main():
 
     # Load config file
     config = FixerConfig(args.config)
+    silentconfig = FixerSilentModeConfig(args.config)
 
     # Processing
-    fixEntries(entries, config)
+    fixEntries(entries, config, silentconfig)
 
     # Save fixed BibTex file
     nanny.saveBibTex(args.output, all_entries, preamble,
