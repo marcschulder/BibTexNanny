@@ -42,7 +42,7 @@ def getEnumerationString(entries, quotes=None):
 
     else:
         first_entry = entries[0]
-        last_entry= entries[-1]
+        last_entry = entries[-1]
         remaining_entries = entries[1:-1]
 
         elems = [first_entry.key]

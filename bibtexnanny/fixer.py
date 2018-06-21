@@ -102,9 +102,8 @@ def fixEntries(entries, config, show):
 
     # Duplicate titles
     if config.duplicateTitles:
-        duplicateTitles = nanny.findDuplicateTitles(entries)
+        # duplicateTitles = nanny.findDuplicateTitles(entries)
         print(NOT_IMPLEMENTED_PATTERN.format("duplicate titles"))
-
 
     # Missing fields #
     # Missing required fields
@@ -179,7 +178,7 @@ def fixEntries(entries, config, show):
 def fixUnsecuredUppercase(text, unsecuredChars):
     unsecuredChars = set(unsecuredChars)
     fixed_chars = []
-    lastCharWasClosingCurlyBrace=False
+    lastCharWasClosingCurlyBrace = False
     for i, c in enumerate(text):
         if i in unsecuredChars:
             if lastCharWasClosingCurlyBrace:
