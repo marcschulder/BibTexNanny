@@ -1,12 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Checks the consistency of BibTeX entries.
 """
 
 import argparse
 
-from bibtexnanny import nanny
+from aux import nanny
 
 __author__ = 'Marc Schulder'
 

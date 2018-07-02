@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Fixes BibTeX entries.
 """
@@ -7,7 +5,7 @@ Fixes BibTeX entries.
 import re
 import argparse
 
-from bibtexnanny import nanny
+from aux import nanny
 
 __author__ = 'Marc Schulder'
 

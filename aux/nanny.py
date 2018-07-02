@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Collection of functions used by various tools of the BibTexNanny toolkit.
 """
@@ -11,7 +9,7 @@ import configparser
 from collections import OrderedDict
 from abc import ABC, abstractmethod
 
-from bibtexnanny.biblib import bib
+from aux.biblib import bib
 
 __author__ = 'Marc Schulder'
 

@@ -1,8 +1,8 @@
 import sys
 from unittest import TestCase
 
-from bibtexnanny import nanny
-from bibtexnanny.biblib import bib
+from aux import nanny
+from aux.biblib import bib
 
 
 TYPEFIELD = '@type'
