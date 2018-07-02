@@ -28,7 +28,7 @@ class ParseError(Exception):
 class Parser:
     """A parser for .bib BibTeX database files."""
 
-    def __init__(self, *, month_style='full'):
+    def __init__(self, *, month_style='full', repeatKeySuffix=None):
         """Initialize an empty database.
 
         This also initializes standard month macros (which are usually
@@ -43,6 +43,9 @@ class Parser:
 
         self.__log, self.__errors = [], False
         self.__entries = collections.OrderedDict()
+
+        self.__repeatKeySuffix = repeatKeySuffix
+        self.__key2repeatKeys = {}
 
         if month_style == 'full':
             self.__macros = {'jan': 'January',   'feb': 'February',
@@ -142,6 +145,18 @@ class Parser:
 
     # Base parsers.  These are the only methods that directly
     # manipulate self.__data.
+    
+    def get_repeated_key_dict(self):
+        """Return a dictionary listing which keys had duplicates and what the duplicates were named in the parse.
+        
+        The key renaming pattern is determined by the Parser argument repeatKeySuffix.
+        
+        The dict maps the duplicate key name to a set containing the renamed keys used by the parser.
+        This set will always contain the original key (for the first occurrence) and a number of renamed keys following
+        the name patter keySUFFIX, keySUFFIXSUFFIX, keySUFFIXSUFFIXSUFFIX, etc.
+        The return map is empty if either there were no repeat keys or repeatKeySuffix is None.
+        """
+        return self.__key2repeatKeys
 
     def _try_tok(self, regexp, skip_space=True):
         """Scan regexp followed by white space.
@@ -271,7 +286,17 @@ class Parser:
             field_pos[field] = self.__pos_factory.offset_to_pos(field_off)
 
         if key.lower() in self.__entries:
-            self._fail('repeated entry')
+            if self.__repeatKeySuffix is None:
+                self._fail('repeated entry')
+            else:
+                repeatKeys = self.__key2repeatKeys.setdefault(key, {key})
+                while True:
+                    key += self.__repeatKeySuffix
+                    if key not in repeatKeys:
+                        repeatKeys.add(key)
+                        break
+                    
+                    
         self.__entries[key.lower()] = Entry(fields, typ, key, pos, field_pos)
 
     def _scan_field_value(self):

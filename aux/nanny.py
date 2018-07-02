@@ -326,7 +326,7 @@ def loadBibTex(filename, loadPreamble=False):
         preamble = ''.join(preamble_lines)
 
     # Parse BibTex entries
-    parser = bib.Parser()
+    parser = bib.Parser(repeatKeySuffix="_REPEATKEY")
     with open(filename) as f:
         parser.parse(f, log_fp=sys.stderr)
 
