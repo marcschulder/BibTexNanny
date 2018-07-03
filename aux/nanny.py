@@ -434,10 +434,10 @@ def getFieldAvailability(entry):
                     FIELD_IS_OPTIONAL_MISSING: [],
                     FIELD_IS_ADDITIONAL: [],
                     }
-    unseenRequiredFields = set(TYPE2REQUIRED_FIELDS[entry.typ])
-    requiredFields = TYPE2REQUIRED_FIELDS[entry.typ]
-    unseenOptionalFields = set(TYPE2OPTIONAL_FIELDS[entry.typ])
-    optionalFields = TYPE2OPTIONAL_FIELDS[entry.typ]
+    unseenRequiredFields = set(TYPE2REQUIRED_FIELDS.get(entry.typ, set()))
+    requiredFields = TYPE2REQUIRED_FIELDS.get(entry.typ, set())
+    unseenOptionalFields = set(TYPE2OPTIONAL_FIELDS.get(entry.typ, set()))
+    optionalFields = TYPE2OPTIONAL_FIELDS.get(entry.typ, set())
     requiredAlts = TYPE2REQUIRED_ALTERNATIVES.get(entry.typ, {})
     optionalAlts = TYPE2OPTIONAL_ALTERNATIVES.get(entry.typ, {})
 
