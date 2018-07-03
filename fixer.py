@@ -61,16 +61,21 @@ class FixerConfig(nanny.NannyConfig):
 class FixerSilentModeConfig(nanny.NannyConfig):
     SECTION = 'Fixer Silent Mode'
 
-    SHOW = True
-    HIDE = False
+    SHOW = 2
+    SUMMARY = 1
+    HIDE = 0
 
     FALLBACK_VALUE = SHOW
 
     CONFIGVALUE2INTERNAL = {'show': SHOW,
                             'true': SHOW,
+                            str(SHOW): SHOW,
                             True: SHOW,
+                            'summary': SUMMARY,
+                            str(SUMMARY): SUMMARY,
                             'hide': HIDE,
                             'false': HIDE,
+                            str(HIDE): HIDE,
                             False: HIDE,
                             }
 
@@ -108,18 +113,18 @@ def fixEntries(entries, config, show):
     if config.unsecuredTitleChars:
         key2unsecuredChars = nanny.findUnsecuredUppercase(entries)
         if key2unsecuredChars:
-            if show.unsecuredTitleChars:
+            if show.unsecuredTitleChars >= FixerSilentModeConfig.SUMMARY:
                 print(HEADLINE_PATTERN.format("Securing uppercase characters in titles with curly braces"))
             for key, unsecuredChars in key2unsecuredChars.items():
                 entry = entries[key]
                 original_title = entry[nanny.FIELD_TITLE]
                 fixed_title = fixUnsecuredUppercase(original_title, unsecuredChars)
                 entry[nanny.FIELD_TITLE] = fixed_title
-                if show.unsecuredTitleChars:
+                if show.unsecuredTitleChars >= FixerSilentModeConfig.SHOW:
                     print("Fixed {} unsecured uppercase characters in entry {}".format(len(unsecuredChars), key))
                     print("  Before: {}".format(original_title))
                     print("  After:  {}".format(fixed_title))
-            if show.unsecuredTitleChars:
+            if show.unsecuredTitleChars >= FixerSilentModeConfig.SUMMARY:
                 print()
 
     # Unnecessary curly braces
@@ -130,17 +135,17 @@ def fixEntries(entries, config, show):
     if config.badPageNumbers:
         badPageNumberEntries = nanny.findBadPageNumbers(entries)
         if badPageNumberEntries:
-            if show.badPageNumbers:
+            if show.badPageNumbers >= FixerSilentModeConfig.SUMMARY:
                 print(HEADLINE_PATTERN.format("Fixing page numbers"))
             for entry in badPageNumberEntries:
                 original_pages = entry[nanny.FIELD_PAGES]
                 fixed_pages = fixBadPageNumbers(original_pages)
                 entry[nanny.FIELD_PAGES] = fixed_pages
-                if show.badPageNumbers:
+                if show.badPageNumbers >= FixerSilentModeConfig.SHOW:
                     print("Fixed page numbers for entry {}".format(entry.key))
                     print("  Before: {}".format(original_pages))
                     print("  After:  {}".format(fixed_pages))
-            if show.badPageNumbers:
+            if show.badPageNumbers >= FixerSilentModeConfig.SUMMARY:
                 print()
 
     # Inconsistent Formatting #
@@ -155,7 +160,7 @@ def fixEntries(entries, config, show):
     # Inconsistent location names
     if config.inconsistentLocations:
         locationKnowledge = nanny.LocationKnowledge(countryFile='info/countries.config', statesFile='info/states.config')
-        if show.inconsistentLocations:
+        if show.inconsistentLocations >= FixerSilentModeConfig.SUMMARY:
             print(HEADLINE_PATTERN.format("Fixing incomplete location names"))
             # TODO: Also use information from other entries to expand this one
         for key, entry in entries.items():
@@ -166,17 +171,40 @@ def fixEntries(entries, config, show):
                 fixedAddress = location.getString()
                 if fixedAddress != address:
                     entry['address'] = fixedAddress
-                    if show.inconsistentLocations:
+                    if show.inconsistentLocations >= FixerSilentModeConfig.SHOW:
                         print("Fixed address info for entry {}".format(entry.key))
                         print("  Before: {}".format(address))
                         print("  After:  {}".format(fixedAddress))
+        if show.inconsistentLocations >= FixerSilentModeConfig.SUMMARY:
+            print()
 
     # Missing fields #
     # Missing required fields
     if config.anyMissingFields:
+        if show.anyMissingFields >= FixerSilentModeConfig.SUMMARY:
+            print(HEADLINE_PATTERN.format("Adding missing information"))
+        
+        # Infer information
         inferrer = nanny.FieldInferrer(entries)
         for key, entry in entries.items():
-            inferrer.addInformation(entry, verbose=show.anyMissingFields)
+            inferrer.addInformation(entry,
+                                    addRequiredFields=config.missingRequiredFields,
+                                    addOptionalFields=config.missingOptionalFields,
+                                    verbose=show.anyMissingFields >= FixerSilentModeConfig.SHOW)
+        
+        # Summary
+        if show.anyMissingFields >= FixerSilentModeConfig.SUMMARY:
+            action2field2count = inferrer.getFieldChangeCount()
+            field2count = action2field2count.get(inferrer.ACTION_ADD)
+            if field2count:
+                print("Summary: Added information")
+                for field, count in field2count.items():
+                    print('  Added {count} "{field}" fields'.format(field=field, count=count))
+        
+        if show.anyMissingFields >= FixerSilentModeConfig.SUMMARY:
+            print()
+                
+        
 
         # if config.missingRequiredFields:
         #     print(NOT_IMPLEMENTED_PATTERN.format("missing required fields"))

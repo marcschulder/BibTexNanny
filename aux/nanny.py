@@ -6,7 +6,7 @@ import sys
 import os
 import re
 import configparser
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple, Counter
 from abc import ABC, abstractmethod
 
 from aux.biblib import bib
@@ -62,6 +62,7 @@ TYPE2OPTIONAL_FIELDS = {'article': {'number', 'pages', 'month', 'note', 'key'},
                         'techreport': {'type', 'number', 'address', 'month', 'note', 'key'},
                         'unpublished': {'month', 'year', 'key'},
                         }
+
 TYPE2OPTIONAL_ALTERNATIVES = {'book': {'volume': 'number', 'number': 'volume'},
                               'inbook': {'volume': 'number', 'number': 'volume'},
                               'incollection': {'volume': 'number', 'number': 'volume'},
@@ -116,7 +117,16 @@ class NannyConfig(ABC):
         self._setAnyMissingFieldsValue()
 
     def _setAnyMissingFieldsValue(self):
-        self.anyMissingFields = self.missingRequiredFields or self.missingOptionalFields
+        if self.missingRequiredFields is None:
+            if self.missingOptionalFields is None:
+                return None
+            else:
+                return self.missingOptionalFields
+        else:
+            if self.missingOptionalFields is None:
+                return self.missingRequiredFields
+            else:
+                self.anyMissingFields = max(self.missingRequiredFields, self.missingOptionalFields)
 
     @abstractmethod
     def _getConfigValue(self, section, key, fallback=FALLBACK):
@@ -124,6 +134,10 @@ class NannyConfig(ABC):
 
 
 class FieldInferrer:
+    ACTION_ADD = 'ADD'
+    
+    EventTuple = namedtuple('EventTuple', ('action', 'key', 'field', 'value', 'isRequiredField'))
+    
     TYPE2INPUT2INFERRABLE = {
         'incollection':
             {('booktitle', 'year'): ('address', 'month', 'editor', 'publisher')},
@@ -132,6 +146,7 @@ class FieldInferrer:
     }
 
     def __init__(self, entries):
+        self.log = []
         self.type2input2information, self.type2input2field2conflicts = self._collectInformation(entries)
         # for typ, input2field2conflicts in self.type2input2field2conflicts.items():
         #     print(typ)
@@ -225,24 +240,56 @@ class FieldInferrer:
         else:
             return None
 
-    def addInformation(self, entry, verbose=False):
-        INPUT2INFERRABLE = self.TYPE2INPUT2INFERRABLE.get(entry.typ)
+    def addInformation(self, entry, addRequiredFields, addOptionalFields, verbose=False):
+        # Maps a tuple of fields A to a tuple of fields B.
+        # If all fields A are known, all fields B can potentially be inferred from another entry
+        # with the same values for A.
+        input2inferrable = self.TYPE2INPUT2INFERRABLE.get(entry.typ)
+        # Mapping specific pieces of information to the information that can be inferred from them.
+        # The keys are a tuple of (field, value) tuples and values are field->value dicts
         input2information = self.type2input2information.get(entry.typ)
-        if INPUT2INFERRABLE is not None:
-            for inputFields, inferrableFields in INPUT2INFERRABLE.items():
+        # Choose which fields may be edited, based on the user's choice for adding required and optional fields.
+        # Is a mapping from the field name to a boolean indicating whether it is a required field
+        editableFields2isRequiredField = {}
+        if addOptionalFields:
+            for optionalField in TYPE2OPTIONAL_FIELDS.get(entry.typ, set()):
+                editableFields2isRequiredField[optionalField] = False
+        if addRequiredFields:
+            for requiredField in TYPE2REQUIRED_FIELDS.get(entry.typ, set()):
+                editableFields2isRequiredField[requiredField] = True
+        
+        # Add inferrable information
+        if input2inferrable is not None:
+            for inputFields, inferrableFields in input2inferrable.items():
+                # Collect this entry's values for its inferrable fields.
                 inputValues = self._getAllFieldValues(entry, inputFields)
                 if inputValues is not None:
-                    # print(inputValues)
                     infoDict = input2information.get(inputValues)
-                    # print(' ', infoDict)
                     if infoDict is not None:
                         for field, value in infoDict.items():
                             if field in entry:
+                                # If the entry already has a value for this field, we need no inference.
                                 pass
                             else:
-                                if verbose:
-                                    print('Adding field "{}" to key "{}": {}'.format(field, entry.key, value))
-                                entry[field] = value
+                                if field in editableFields2isRequiredField:
+                                    isRequiredField = editableFields2isRequiredField[field]
+                                    if verbose:
+                                        if isRequiredField:
+                                            print('Adding required field "{}" to key "{}": {}'.format(field, entry.key,
+                                                                                                      value))
+                                        else:
+                                            print('Adding optional field "{}" to key "{}": {}'.format(field, entry.key,
+                                                                                                      value))
+                                    self.log.append(self.EventTuple(action=self.ACTION_ADD, key=entry.key, field=field,
+                                                                    value=value, isRequiredField=isRequiredField))
+                                    entry[field] = value
+    
+    def getFieldChangeCount(self):
+        action2field2count = {}
+        for event in self.log:
+            field2count = action2field2count.setdefault(event.action, Counter())
+            field2count[event.field] += 1
+        return action2field2count
 
 
 class LocationKnowledge:
