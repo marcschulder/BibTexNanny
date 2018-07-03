@@ -1,6 +1,7 @@
 import sys
 from unittest import TestCase
 
+import fixer
 from aux import nanny
 from aux.biblib import bib
 
@@ -137,3 +138,46 @@ class TestFindUnsecuredUppercase(TestCase):
         key2goldChars = {DEFAULT_KEY: [1, 2, 3, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}
         key2unsecuredChars = nanny.findUnsecuredUppercase(parse(entryString))
         self.assertEqual(key2unsecuredChars, key2goldChars)
+
+
+class TestBadPageNumbers(TestCase):
+    def test_fixBadPageNumbers_range_correct(self):
+        bad_range = '153--176'
+        good_range = '153--176'
+        self.assertEqual(fixer.fixBadPageNumbers(bad_range), good_range)
+
+    def test_fixBadPageNumbers_range_space(self):
+        bad_range = '153 -- 176'
+        good_range = '153--176'
+        self.assertEqual(fixer.fixBadPageNumbers(bad_range), good_range)
+
+    def test_fixBadPageNumbers_range_morespace(self):
+        bad_range = '153   --   176'
+        good_range = '153--176'
+        self.assertEqual(fixer.fixBadPageNumbers(bad_range), good_range)
+
+    def test_fixBadPageNumbers_range_1hyphen(self):
+        bad_range = '153-176'
+        good_range = '153--176'
+        self.assertEqual(fixer.fixBadPageNumbers(bad_range), good_range)
+
+    def test_fixBadPageNumbers_range_3hyphens(self):
+        bad_range = '153---176'
+        good_range = '153--176'
+        self.assertEqual(fixer.fixBadPageNumbers(bad_range), good_range)
+
+    def test_fixBadPageNumbers_range_4hyphens(self):
+        bad_range = '153----176'
+        good_range = '153--176'
+        self.assertEqual(fixer.fixBadPageNumbers(bad_range), good_range)
+
+    def test_fixBadPageNumbers_range_endash(self):
+        bad_range = '153–176'
+        good_range = '153--176'
+        self.assertEqual(fixer.fixBadPageNumbers(bad_range), good_range)
+
+    def test_fixBadPageNumbers_range_emdash(self):
+        bad_range = '153—176'
+        good_range = '153--176'
+        self.assertEqual(fixer.fixBadPageNumbers(bad_range), good_range)
+    
