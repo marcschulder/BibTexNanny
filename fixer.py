@@ -12,8 +12,7 @@ __author__ = 'Marc Schulder'
 HEADLINE_PATTERN = "===== {} ====="
 NOT_IMPLEMENTED_PATTERN = "Auto-fix for {} not yet implemented"
 
-RE_NOTPAGES_CHAR = re.compile(r'[^0-9\-+,]+')
-
+RE_PAGES_RANGE = re.compile(r'(?P<num1>[0-9]+)(\s*(-+|–|—)\s*)(?P<num2>[0-9]+)')
 
 class FixerConfig(nanny.NannyConfig):
     SECTION = 'Fixer'
@@ -140,11 +139,18 @@ def fixEntries(entries, config, show):
             for entry in badPageNumberEntries:
                 original_pages = entry[nanny.FIELD_PAGES]
                 fixed_pages = fixBadPageNumbers(original_pages)
-                entry[nanny.FIELD_PAGES] = fixed_pages
-                if show.badPageNumbers >= FixerSilentModeConfig.SHOW:
-                    print("Fixed page numbers for entry {}".format(entry.key))
-                    print("  Before: {}".format(original_pages))
-                    print("  After:  {}".format(fixed_pages))
+                
+                if fixed_pages == original_pages:
+                    # Fixing page numbers failed
+                    if show.badPageNumbers >= FixerSilentModeConfig.SHOW:
+                        print("Failed to fix bad page numbers for entry {}: {}".format(entry.key, original_pages))
+                else:
+                    # Fixing page numbers forked
+                    entry[nanny.FIELD_PAGES] = fixed_pages
+                    if show.badPageNumbers >= FixerSilentModeConfig.SHOW:
+                        print("Fixed page numbers for entry {}".format(entry.key))
+                        print("  Before: {}".format(original_pages))
+                        print("  After:  {}".format(fixed_pages))
             if show.badPageNumbers >= FixerSilentModeConfig.SUMMARY:
                 print()
 
@@ -203,8 +209,6 @@ def fixEntries(entries, config, show):
         
         if show.anyMissingFields >= FixerSilentModeConfig.SUMMARY:
             print()
-                
-        
 
         # if config.missingRequiredFields:
         #     print(NOT_IMPLEMENTED_PATTERN.format("missing required fields"))
@@ -234,11 +238,7 @@ def fixUnsecuredUppercase(text, unsecuredChars):
 
 
 def fixBadPageNumbers(pages):
-    pages = pages.replace(' ', '')
-    while '---' in pages:
-        pages = pages.replace('---', '--')
-    if RE_NOTPAGES_CHAR.search(pages):
-        pages = RE_NOTPAGES_CHAR.sub('', pages)
+    pages = RE_PAGES_RANGE.sub(r'\g<num1>--\g<num2>', pages)
     return pages
 
 
