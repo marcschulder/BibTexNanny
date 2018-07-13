@@ -159,9 +159,9 @@ def fixEntries(entries, config, show):
     if config.inconsistentConferences:
         print(NOT_IMPLEMENTED_PATTERN.format("inconsistent names for conferences"))
 
-    # Inconsistent name initials formatting
-    if config.inconsistentNames:
-        print(NOT_IMPLEMENTED_PATTERN.format("inconsistent name initials formatting"))
+    # Ambiguous name initials formatting
+    if config.ambiguousNames:
+        print(NOT_IMPLEMENTED_PATTERN.format("ambiguous name initials formatting"))
 
     # Inconsistent location names
     if config.inconsistentLocations:

@@ -75,6 +75,7 @@ def checkConsistency(entries, config):
         #     print()
 
     # Duplicate titles
+    # Todo: Add handling of acceptable cases, such as different editions of a book, preprints and talks.
     if config.duplicateTitles:
         title2duplicateEntries = nanny.findDuplicateTitles(entries)
         if title2duplicateEntries:
@@ -104,6 +105,10 @@ def checkConsistency(entries, config):
 
     # Bad Formatting #
     # Unsecured uppercase characters in titles
+    # Todo: Identify over-eager use of curly braces, e.g. across multiple words
+    # Todo: Add option to prefer braces around full words instead of single characters
+    # Todo: Improve search of unsecured characters to not break when double braces are used
+    # Todo: Improve search of unsecured characters to not break when
     if config.unsecuredTitleChars:
         key2unsecuredChars = nanny.findUnsecuredUppercase(entries)
         if key2unsecuredChars:
@@ -131,13 +136,13 @@ def checkConsistency(entries, config):
     if config.inconsistentConferences:
         print(NOT_IMPLEMENTED_PATTERN.format("inconsistent names for conferences"))
 
-    # Incomplete name initials formatting
+    # Incomplete name formatting (e.g. first name is initials only or missing middle names found in other entry)
     if config.incompleteNames:
-        print(NOT_IMPLEMENTED_PATTERN.format("incomplete name initials formatting"))
+        print(NOT_IMPLEMENTED_PATTERN.format("incomplete name formatting"))
 
-    # Inconsistent name initials formatting
-    if config.inconsistentNames:
-        print(NOT_IMPLEMENTED_PATTERN.format("inconsistent name initials formatting"))
+    # Ambiguous name formatting (i.e. not following the "LAST, FIRST and LAST, FIRST" format)
+    if config.ambiguousNames:
+        print(NOT_IMPLEMENTED_PATTERN.format("ambigous name formatting"))
 
     # Inconsistent location names
     if config.inconsistentLocations:

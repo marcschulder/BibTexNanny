@@ -85,7 +85,7 @@ class NannyConfig(ABC):
         self.badPageNumbers = fallback
         self.inconsistentConferences = fallback
         self.incompleteNames = fallback
-        self.inconsistentNames = fallback
+        self.ambiguousNames = fallback
         self.inconsistentLocations = fallback
         self.inconsistentInferrableInfo = fallback
 
@@ -110,7 +110,7 @@ class NannyConfig(ABC):
         self.badPageNumbers = self._getConfigValue(section, 'Bad Page Numbers')
         self.inconsistentConferences = self._getConfigValue(section, 'Inconsistent Conferences')
         self.incompleteNames = self._getConfigValue(section, 'Incomplete Names')
-        self.inconsistentNames = self._getConfigValue(section, 'Inconsistent Names')
+        self.ambiguousNames = self._getConfigValue(section, 'Ambiguous Names')
         self.inconsistentLocations = self._getConfigValue(section, 'Inconsistent Locations')
         self.inconsistentInferrableInfo = self._getConfigValue(section, 'Inconsistent Inferrable Information')
 
