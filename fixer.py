@@ -14,6 +14,7 @@ NOT_IMPLEMENTED_PATTERN = "Auto-fix for {} not yet implemented"
 
 RE_PAGES_RANGE = re.compile(r'(?P<num1>[0-9]+)(\s*(-+|–|—)\s*)(?P<num2>[0-9]+)')
 
+
 class FixerConfig(nanny.NannyConfig):
     SECTION = 'Fixer'
 
@@ -56,6 +57,14 @@ class FixerConfig(nanny.NannyConfig):
         except KeyError:
             raise ValueError('Unknown config value: "{}"'.format(orig_value))
 
+    def _getConfigList(self, section, key, separator=','):
+        value = section.get(key, fallback=None)
+        if value is None:
+            return []
+        else:
+            items = [item.strip() for item in value.split(separator)]
+            return items
+
 
 class FixerSilentModeConfig(nanny.NannyConfig):
     SECTION = 'Fixer Silent Mode'
@@ -94,6 +103,14 @@ class FixerSilentModeConfig(nanny.NannyConfig):
             return self.CONFIGVALUE2INTERNAL[value]
         except KeyError:
             raise ValueError('Unknown config value: "{}"'.format(orig_value))
+
+    def _getConfigList(self, section, key, separator=','):
+        value = section.get(key, fallback=None)
+        if value is None:
+            return []
+        else:
+            items = [item.strip() for item in value.split(separator)]
+            return items
 
 
 def fixEntries(entries, config, show):
@@ -165,7 +182,8 @@ def fixEntries(entries, config, show):
 
     # Inconsistent location names
     if config.inconsistentLocations:
-        locationKnowledge = nanny.LocationKnowledge(countryFile='info/countries.config', statesFile='info/states.config')
+        locationKnowledge = nanny.LocationKnowledge(countryFile='info/countries.config',
+                                                    statesFile='info/states.config')
         if show.inconsistentLocations >= FixerSilentModeConfig.SUMMARY:
             print(HEADLINE_PATTERN.format("Fixing incomplete location names"))
             # TODO: Also use information from other entries to expand this one

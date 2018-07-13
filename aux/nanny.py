@@ -78,6 +78,7 @@ class NannyConfig(ABC):
     def __init__(self, filename=None, fallback=FALLBACK):
         self.duplicateKeys = fallback
         self.duplicateTitles = fallback
+        self.duplicateTitlesIgnoredTypes = []
         self.missingRequiredFields = fallback
         self.missingOptionalFields = fallback
         self.unsecuredTitleChars = fallback
@@ -103,6 +104,7 @@ class NannyConfig(ABC):
         section = config[self.SECTION]
         self.duplicateKeys = self._getConfigValue(section, 'Duplicate Keys')
         self.duplicateTitles = self._getConfigValue(section, 'Duplicate Titles')
+        self.duplicateTitlesIgnoredTypes = self._getConfigList(section, 'Ignore Entry Types for Duplicate Titles')
         self.missingRequiredFields = self._getConfigValue(section, 'Missing Required Fields')
         self.missingOptionalFields = self._getConfigValue(section, 'Missing Optional Fields')
         self.unsecuredTitleChars = self._getConfigValue(section, 'Unsecured Title Characters')
@@ -130,6 +132,10 @@ class NannyConfig(ABC):
 
     @abstractmethod
     def _getConfigValue(self, section, key, fallback=FALLBACK):
+        pass
+
+    @abstractmethod
+    def _getConfigList(self, section, key):
         pass
 
 
@@ -479,9 +485,12 @@ def findDuplicateKeys(entries):
     # return duplicates
 
 
-def findDuplicateTitles(entries, ignoreCurlyBraces=True, ignoreCaps=True):
+def findDuplicateTitles(entries, ignoredTypes=[], ignoreCurlyBraces=True, ignoreCaps=True):
     title2seenEntries = {}
     for key, entry in entries.items():
+        if entry.typ in ignoredTypes:
+            continue
+
         title = entry.get("title")
         if title is None:
             continue

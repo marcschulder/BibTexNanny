@@ -28,6 +28,14 @@ class ConsistencyConfig(nanny.NannyConfig):
 
         return value
 
+    def _getConfigList(self, section, key, separator=','):
+        value = section.get(key, fallback=None)
+        if value is None:
+            return []
+        else:
+            items = [item.strip() for item in value.split(separator)]
+            return items
+
 
 def getEnumerationString(entries, quotes=None):
     if len(entries) == 0:
@@ -77,7 +85,7 @@ def checkConsistency(entries, config):
     # Duplicate titles
     # Todo: Add handling of acceptable cases, such as different editions of a book, preprints and talks.
     if config.duplicateTitles:
-        title2duplicateEntries = nanny.findDuplicateTitles(entries)
+        title2duplicateEntries = nanny.findDuplicateTitles(entries, config.duplicateTitlesIgnoredTypes)
         if title2duplicateEntries:
             print(HEADLINE_PATTERN.format("Duplicate Titles"))
             for duplicateTitle, duplicateTitleEntries in title2duplicateEntries.items():
