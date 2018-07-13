@@ -482,7 +482,10 @@ def findDuplicateKeys(entries):
 def findDuplicateTitles(entries, ignoreCurlyBraces=True, ignoreCaps=True):
     title2seenEntries = {}
     for key, entry in entries.items():
-        title = entry["title"]
+        title = entry.get("title")
+        if title is None:
+            continue
+
         if ignoreCurlyBraces:
             title = title.replace('{', '')
             title = title.replace('}', '')
