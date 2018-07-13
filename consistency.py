@@ -108,7 +108,6 @@ def checkConsistency(entries, config):
     # Todo: Identify over-eager use of curly braces, e.g. across multiple words
     # Todo: Add option to prefer braces around full words instead of single characters
     # Todo: Improve search of unsecured characters to not break when double braces are used
-    # Todo: Improve search of unsecured characters to not break when
     if config.unsecuredTitleChars:
         key2unsecuredChars = nanny.findUnsecuredUppercase(entries)
         if key2unsecuredChars:
