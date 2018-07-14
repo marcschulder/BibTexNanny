@@ -433,6 +433,14 @@ def filterEntries(key2entry, keyWhitelist):
     return filteredEntries
 
 
+def getEntriesWithField(entries, field):
+    for key, entry in entries.items():
+        if field not in entry:
+            continue
+        else:
+            yield key, entry
+
+
 def getFieldAvailability(entry):
     availability = {FIELD_IS_REQUIRED_AVAILABLE: [],
                     FIELD_IS_REQUIRED_MISSING: [],
@@ -487,13 +495,11 @@ def findDuplicateKeys(entries):
 
 def findDuplicateTitles(entries, ignoredTypes=[], ignoreCurlyBraces=True, ignoreCaps=True):
     title2seenEntries = {}
-    for key, entry in entries.items():
+    for key, entry in getEntriesWithField(entries, "title"):
         if entry.typ in ignoredTypes:
             continue
 
         title = entry.get("title")
-        if title is None:
-            continue
 
         if ignoreCurlyBraces:
             title = title.replace('{', '')
@@ -525,10 +531,7 @@ def findUnsecuredUppercase(entries, field):
     :return:
     """
     key2unsecuredChars = OrderedDict()
-    for key, entry in entries.items():
-        if field not in entry:
-            continue
-
+    for key, entry in getEntriesWithField(entries, field):
         title = entry[field]
         isSecured = False
 
@@ -555,10 +558,7 @@ def findBadPageNumbers(entries, tolerateSingleHyphens=True):
         pageRE = re.compile(r'^{0}(,{0})*$'.format(r'\d+((\-\-\d+)|(\+))?'))
 
     badEntries = []
-    for key, entry in entries.items():
-        if "pages" not in entry:
-            continue
-
+    for key, entry in getEntriesWithField(entries, "pages"):
         pages = entry["pages"]
         if not pageRE.match(pages):
             badEntries.append(entry)

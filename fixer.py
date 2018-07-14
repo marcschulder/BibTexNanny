@@ -180,6 +180,10 @@ def fixEntries(entries, config, show):
     if config.ambiguousNames:
         print(NOT_IMPLEMENTED_PATTERN.format("ambiguous name initials formatting"))
 
+    # All-caps name formatting
+    if config.ambiguousNames:
+        print(NOT_IMPLEMENTED_PATTERN.format("all-caps name formatting"))
+
     # Inconsistent location names
     if config.inconsistentLocations:
         locationKnowledge = nanny.LocationKnowledge(countryFile='info/countries.config',
@@ -187,18 +191,17 @@ def fixEntries(entries, config, show):
         if show.inconsistentLocations >= FixerSilentModeConfig.SUMMARY:
             print(HEADLINE_PATTERN.format("Fixing incomplete location names"))
             # TODO: Also use information from other entries to expand this one
-        for key, entry in entries.items():
-            if 'address' in entry:
-                address = entry['address']
-                location = nanny.Location(address, locationKnowledge)
-                location.expandInformation()
-                fixedAddress = location.getString()
-                if fixedAddress != address:
-                    entry['address'] = fixedAddress
-                    if show.inconsistentLocations >= FixerSilentModeConfig.SHOW:
-                        print("Fixed address info for entry {}".format(entry.key))
-                        print("  Before: {}".format(address))
-                        print("  After:  {}".format(fixedAddress))
+        for key, entry in nanny.getEntriesWithField(entries, "address"):
+            address = entry['address']
+            location = nanny.Location(address, locationKnowledge)
+            location.expandInformation()
+            fixedAddress = location.getString()
+            if fixedAddress != address:
+                entry['address'] = fixedAddress
+                if show.inconsistentLocations >= FixerSilentModeConfig.SHOW:
+                    print("Fixed address info for entry {}".format(entry.key))
+                    print("  Before: {}".format(address))
+                    print("  After:  {}".format(fixedAddress))
         if show.inconsistentLocations >= FixerSilentModeConfig.SUMMARY:
             print()
 
