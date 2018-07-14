@@ -133,7 +133,7 @@ def checkConsistency(entries, config):
     if config.badPageNumbers:
         badPageNumberEntries = nanny.findBadPageNumbers(entries, tolerateSingleHyphens=False)
         if badPageNumberEntries:
-            print(HEADLINE_PATTERN.format("Titles with badly formatted page numbers"))
+            print(HEADLINE_PATTERN.format("Entries with badly formatted page numbers"))
             for entry in badPageNumberEntries:
                 print("Entry {} has bad page number format: {}".format(entry.key, entry[nanny.FIELD_PAGES]))
             print()
