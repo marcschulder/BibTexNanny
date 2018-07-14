@@ -118,25 +118,25 @@ class TestFindUnsecuredUppercase(TestCase):
     def test_findUnsecuredUppercase_Basic(self):
         entryString = getStringEntry({FIELD_TITLE: 'Logic and Conversation'})
         key2goldChars = {DEFAULT_KEY: [10]}
-        key2unsecuredChars = nanny.findUnsecuredUppercase(parse(entryString))
+        key2unsecuredChars = nanny.findUnsecuredUppercase(parse(entryString), field="title")
         self.assertEqual(key2unsecuredChars, key2goldChars)
 
     def test_findUnsecuredUppercase_InWord(self):
         entryString = getStringEntry({FIELD_TITLE: 'Aligning {G}ermaNet {S}enses'})
         key2goldChars = {DEFAULT_KEY: [16]}
-        key2unsecuredChars = nanny.findUnsecuredUppercase(parse(entryString))
+        key2unsecuredChars = nanny.findUnsecuredUppercase(parse(entryString), field="title")
         self.assertEqual(key2unsecuredChars, key2goldChars)
 
     def test_findUnsecuredUppercase_AllUpper(self):
         entryString = getStringEntry({FIELD_TITLE: 'WORD ASSOCIATION'})
         key2goldChars = {DEFAULT_KEY: [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}
-        key2unsecuredChars = nanny.findUnsecuredUppercase(parse(entryString))
+        key2unsecuredChars = nanny.findUnsecuredUppercase(parse(entryString), field="title")
         self.assertEqual(key2unsecuredChars, key2goldChars)
 
     def test_findUnsecuredUppercase_AllUpperSecuredCap(self):
         entryString = getStringEntry({FIELD_TITLE: 'WORD {A}SSOCIATION'})
         key2goldChars = {DEFAULT_KEY: [1, 2, 3, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}
-        key2unsecuredChars = nanny.findUnsecuredUppercase(parse(entryString))
+        key2unsecuredChars = nanny.findUnsecuredUppercase(parse(entryString), field="title")
         self.assertEqual(key2unsecuredChars, key2goldChars)
 
 

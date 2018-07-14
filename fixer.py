@@ -127,7 +127,7 @@ def fixEntries(entries, config, show):
     # Bad Formatting #
     # Unsecured uppercase characters in titles
     if config.unsecuredTitleChars:
-        key2unsecuredChars = nanny.findUnsecuredUppercase(entries)
+        key2unsecuredChars = nanny.findUnsecuredUppercase(entries, field="title")
         if key2unsecuredChars:
             if show.unsecuredTitleChars >= FixerSilentModeConfig.SUMMARY:
                 print(HEADLINE_PATTERN.format("Securing uppercase characters in titles with curly braces"))

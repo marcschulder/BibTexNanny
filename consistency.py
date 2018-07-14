@@ -117,7 +117,7 @@ def checkConsistency(entries, config):
     # Todo: Add option to prefer braces around full words instead of single characters
     # Todo: Improve search of unsecured characters to not break when double braces are used
     if config.unsecuredTitleChars:
-        key2unsecuredChars = nanny.findUnsecuredUppercase(entries)
+        key2unsecuredChars = nanny.findUnsecuredUppercase(entries, field="title")
         if key2unsecuredChars:
             print(HEADLINE_PATTERN.format("Titles with uppercase characters that are not secured by curly braces"))
             for key in key2unsecuredChars:

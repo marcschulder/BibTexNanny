@@ -511,7 +511,7 @@ def findDuplicateTitles(entries, ignoredTypes=[], ignoreCurlyBraces=True, ignore
     return title2duplicateEntries
 
 
-def findUnsecuredUppercase(entries):
+def findUnsecuredUppercase(entries, field):
     """
     Find entries that contain uppercase characters that are not secured by curly braces.
     The only uppercase character that needs no braces is the first letter of the title, as it is automatically
@@ -521,14 +521,15 @@ def findUnsecuredUppercase(entries):
     uppercase and all others are forced to be lowercase. If you want to display any other uppercase characters, you
     have to secure them by wrapping them in curly braces.
     :param entries:
+    :param field:
     :return:
     """
     key2unsecuredChars = OrderedDict()
     for key, entry in entries.items():
-        if "title" not in entry:
+        if field not in entry:
             continue
 
-        title = entry["title"]
+        title = entry[field]
         isSecured = False
 
         # Skip first character (unless it is a curly brace) as it is auto-converted to uppercase anyway
