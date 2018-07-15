@@ -170,7 +170,7 @@ class Name(collections.namedtuple('Name', 'first von last jr')):
 
     def is_others(self):
         return self.first == '' and self.von == '' and \
-            self.last == 'others' and self.jr == ''
+            self.last in {'others', '{others}'} and self.jr == ''
 
     def pretty(self, template='{first} {von} {last} {jr}'):
         """Pretty-print author according to template.
@@ -445,16 +445,20 @@ class TeXToUnicode(TeXProcessor):
         '\\r': '\u030A', '\\k': '\u0328'
     }
 
-    def process(self, string, pos):
-        string = super().process(string, pos)
+    def process(self, tex_string, pos):
+        unicode_string = super().process(tex_string, pos)
 
         # Handle ligatures that are unique to TeX.  This must be done
         # after macro expansion, but before brace removal because
         # braces inhibit ligatures.
-        string = string.replace('---', '\u2014').replace('--', '\u2013')
+        unicode_string = unicode_string.replace('---', '\u2014').replace('--', '\u2013')
 
         # Remove braces
-        return string.replace('{', '').replace('}', '')
+        escapedSingleCharRE = re.compile(r'{(\w)}')
+        unicode_string = unicode_string.replace('{}', '')
+        unicode_string = escapedSingleCharRE.sub(r'\1', unicode_string)
+
+        return unicode_string
 
     def _expand(self, cs):
         if cs in self._SIMPLE:
