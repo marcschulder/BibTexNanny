@@ -494,7 +494,7 @@ def findDuplicateKeys(entries):
     # return duplicates
 
 
-def findDuplicateTitles(entries, ignoredTypes=[], ignoreCurlyBraces=True, ignoreCaps=True):
+def findDuplicateTitles(entries, ignoredTypes=list(), ignoreCurlyBraces=True, ignoreCaps=True):
     title2seenEntries = {}
     for key, entry in getEntriesWithField(entries, FIELD_TITLE):
         if entry.typ in ignoredTypes:
@@ -532,12 +532,20 @@ def findAllCapsName(entries, field):
 
 
 def findAllCapsNameElement(nameObject, entry):
+    if nameObject.is_others():
+        return []
+
     # initialRE = re.compile(r'((?:{\\.\w})|\w)\.')
+    multiSpaceRE = re.compile(r' +')
+    escapedRE = re.compile(r'{.+}')
     initialsRE = re.compile(r'(\w\.)+')
     romanNumeralsRE = re.compile(r'[IVX]+')
 
     capsFields = []
     for field, namepart in nameObject._asdict().items():
+        if len(namepart) == 0:
+            continue
+
         namepart = fixTexInNameElement(namepart)
 
         try:
@@ -546,14 +554,16 @@ def findAllCapsNameElement(nameObject, entry):
             uni_namepart = namepart
             entry.pos.warn('Could not convert a name to unicode in entry {}: "{}"'.format(entry.key, namepart))
 
-        # uni_namepart = cleanUpNameElement(uni_namepart)
+        uni_namepart = escapedRE.sub('', uni_namepart)
+        uni_namepart = multiSpaceRE.sub(' ', uni_namepart)
+
+        if len(uni_namepart) == 0:
+            continue
 
         namepart_elements = uni_namepart.split()
         for i, namepart_elem in enumerate(namepart_elements):
             if len(namepart_elem) == 1:
                 continue  # A single character being "all-caps" is not relevant
-            # elif len(namepart_elem) == 2 and namepart_elem.endswith('.'):
-            #     continue  # Name initial
             if field == 'first':
                 if initialsRE.fullmatch(namepart_elem):
                     continue  # Part of first name that consists only of initials
@@ -570,15 +580,6 @@ def findAllCapsNameElement(nameObject, entry):
 def fixTexInNameElement(name_element):
     name_element = name_element.replace("\\´", "\\'")
     return name_element
-
-# def cleanUpNameElement(name_element):
-#     fixed_element = re.sub(r'\.(\w)', '. \g<1>', name_element)
-#
-#     if fixed_element != name_element:
-#         print('@@@')
-#         print(name_element)
-#         print(fixed_element)
-#     return fixed_element
 
 
 def findUnsecuredUppercase(entries, field):

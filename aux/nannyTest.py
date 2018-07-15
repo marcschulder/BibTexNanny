@@ -255,3 +255,13 @@ class TestBadNames(TestCase):
         entries = self.getEntries4Name(['Mouse, Jr., Mickey D.'], FIELD_AUTHOR)
         entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
         self.assertEqual(entrykey2CapsNames, {})
+
+    def test_findAllCapsName_NameSpecialchar(self):
+        entries = self.getEntries4Name(['M{\\\'i}ckey Mo{\\"u}se'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEqual(entrykey2CapsNames, {})
+
+    def test_findAllCapsName_NameSecured(self):
+        entries = self.getEntries4Name(['{ACME Unlimited}'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEqual(entrykey2CapsNames, {})
