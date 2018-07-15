@@ -193,7 +193,7 @@ class TestBadNames(TestCase):
         return entries
 
     def test_findAllCapsName_basicName(self):
-        entries = self.getEntries4Name(['Micky Mouse'], FIELD_AUTHOR)
+        entries = self.getEntries4Name(['Mickey Mouse'], FIELD_AUTHOR)
         entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
         self.assertEqual(entrykey2CapsNames, {})
 
@@ -241,7 +241,7 @@ class TestBadNames(TestCase):
                          {'foobar0': [algo.Name(first='Mickey', von='', last='MOUSE', jr='')]})
 
     def test_findAllCapsName_LastnameNumerals(self):
-        entries = self.getEntries4Name(['Micky Mouse III', 'Micky Mouse VI', 'Micky Mouse IX', 'Micky Mouse X'],
+        entries = self.getEntries4Name(['Mickey Mouse III', 'Mickey Mouse VI', 'Mickey Mouse IX', 'Mickey Mouse X'],
                                        FIELD_AUTHOR)
         entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
         self.assertEqual(entrykey2CapsNames, {})
