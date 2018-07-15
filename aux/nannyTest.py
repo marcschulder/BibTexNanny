@@ -3,13 +3,14 @@ from unittest import TestCase
 
 import fixer
 from aux import nanny
-from aux.biblib import bib
+from aux.biblib import bib, algo
 
 
 TYPEFIELD = '@type'
 DEFAULT_KEY_START = 'foobar'
 DEFAULT_KEY = '{}{}'.format(DEFAULT_KEY_START, 2018)
 
+FIELD_AUTHOR = 'author'
 FIELD_TITLE = 'Title'
 FIELD_PAGES = 'Pages'
 
@@ -180,4 +181,66 @@ class TestBadPageNumbers(TestCase):
         bad_range = '153—176'
         good_range = '153--176'
         self.assertEqual(fixer.fixBadPageNumbers(bad_range), good_range)
-    
+
+
+class TestBadNames(TestCase):
+    @staticmethod
+    def getEntries4Name(nameStrings, field):
+        entryDicts = [{field: name} for name in nameStrings]
+        entriesString = getStringEntries(entryDicts)
+        entries = parse(entriesString)
+        return entries
+
+    def test_findAllCapsName_basicName(self):
+        entries = self.getEntries4Name(['Micky Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEqual(entrykey2CapsNames, {})
+
+    def test_findAllCapsName_basicNameAllCaps(self):
+        entries = self.getEntries4Name(['MICKEY MOUSE'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEqual(entrykey2CapsNames,
+                         {'foobar0': [algo.Name(first='MICKEY', von='', last='MOUSE', jr='')]})
+
+    def test_findAllCapsName_FirstnameIsInitial(self):
+        entries = self.getEntries4Name(['M. Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEqual(entrykey2CapsNames, {})
+
+    def test_findAllCapsName_FirstnameIsInitialNoperiod(self):
+        entries = self.getEntries4Name(['M Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEqual(entrykey2CapsNames, {})
+
+    def test_findAllCapsName_FirstnameContainsInitial(self):
+        entries = self.getEntries4Name(['Mickey D. Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEqual(entrykey2CapsNames, {})
+
+    def test_findAllCapsName_FirstnameInitialsSpaced(self):
+        entries = self.getEntries4Name(['M. D. Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEqual(entrykey2CapsNames, {})
+
+    def test_findAllCapsName_FirstnameInitialsNospace(self):
+        entries = self.getEntries4Name(['M.D. Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEqual(entrykey2CapsNames, {})
+
+    def test_findAllCapsName_FirstnameInitialsNoperiods(self):
+        entries = self.getEntries4Name(['MD Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEqual(entrykey2CapsNames,
+                         {'foobar0': [algo.Name(first='MD', von='', last='Mouse', jr='')]})
+
+    def test_findAllCapsName_LastnameAllcaps(self):
+        entries = self.getEntries4Name(['Mickey MOUSE'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEqual(entrykey2CapsNames,
+                         {'foobar0': [algo.Name(first='Mickey', von='', last='MOUSE', jr='')]})
+
+    def test_findAllCapsName_LastnameNumerals(self):
+        entries = self.getEntries4Name(['Micky Mouse III', 'Micky Mouse VI', 'Micky Mouse IX', 'Micky Mouse X'],
+                                       FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEqual(entrykey2CapsNames, {})
