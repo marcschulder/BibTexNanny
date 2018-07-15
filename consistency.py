@@ -151,6 +151,17 @@ def checkConsistency(entries, config):
     if config.ambiguousNames:
         print(NOT_IMPLEMENTED_PATTERN.format("ambigous name formatting"))
 
+    # All-caps name formatting
+    if config.allcapsNames:
+        entrykey2CapsNames = nanny.findAllCapsName(entries, nanny.FIELD_AUTHOR)
+        if entrykey2CapsNames:
+            print(HEADLINE_PATTERN.format("Authors whose names are all-caps"))
+            for key, capsnames in entrykey2CapsNames.items():
+                # author = entries[key][nanny.FIELD_AUTHOR]
+                for capsname in capsnames:
+                    print("Entry {} has authors which are all-caps: {}".format(key, capsname.pretty()))
+            print()
+
     # Inconsistent location names
     if config.inconsistentLocations:
         print(NOT_IMPLEMENTED_PATTERN.format("inconsistent location names"))

@@ -9,11 +9,11 @@ import configparser
 from collections import OrderedDict, namedtuple, Counter
 from abc import ABC, abstractmethod
 
-from aux.biblib import bib
+from aux import biblib
 
 __author__ = 'Marc Schulder'
 
-
+FIELD_AUTHOR = 'author'
 FIELD_TITLE = 'title'
 FIELD_PAGES = 'pages'
 
@@ -113,6 +113,7 @@ class NannyConfig(ABC):
         self.inconsistentConferences = self._getConfigValue(section, 'Inconsistent Conferences')
         self.incompleteNames = self._getConfigValue(section, 'Incomplete Names')
         self.ambiguousNames = self._getConfigValue(section, 'Ambiguous Names')
+        self.allcapsNames = self._getConfigValue(section, 'All-Caps Names')
         self.inconsistentLocations = self._getConfigValue(section, 'Inconsistent Locations')
         self.inconsistentInferrableInfo = self._getConfigValue(section, 'Inconsistent Inferrable Information')
 
@@ -379,7 +380,7 @@ def loadBibTex(filename, loadPreamble=False):
         preamble = ''.join(preamble_lines)
 
     # Parse BibTex entries
-    parser = bib.Parser(repeatKeySuffix="_REPEATKEY")
+    parser = biblib.bib.Parser(repeatKeySuffix="_REPEATKEY")
     with open(filename) as f:
         parser.parse(f, log_fp=sys.stderr)
 
@@ -495,11 +496,11 @@ def findDuplicateKeys(entries):
 
 def findDuplicateTitles(entries, ignoredTypes=[], ignoreCurlyBraces=True, ignoreCaps=True):
     title2seenEntries = {}
-    for key, entry in getEntriesWithField(entries, "title"):
+    for key, entry in getEntriesWithField(entries, FIELD_TITLE):
         if entry.typ in ignoredTypes:
             continue
 
-        title = entry.get("title")
+        title = entry.get(FIELD_TITLE)
 
         if ignoreCurlyBraces:
             title = title.replace('{', '')
@@ -517,13 +518,76 @@ def findDuplicateTitles(entries, ignoredTypes=[], ignoreCurlyBraces=True, ignore
     return title2duplicateEntries
 
 
+def findAllCapsName(entries, field):
+    entrykey2CapsNames = {}
+    for key, entry in getEntriesWithField(entries, field):
+        authors = entry.authors(field)
+        for author in authors:
+            capsFields = findAllCapsNameElement(author, entry)
+            if len(capsFields) > 0:
+                # print(author)
+                capsNames = entrykey2CapsNames.setdefault(key, [])
+                capsNames.append(author)
+    return entrykey2CapsNames
+
+
+def findAllCapsNameElement(nameObject, entry):
+    # initialRE = re.compile(r'((?:{\\.\w})|\w)\.')
+    initialsRE = re.compile(r'(\w\.)+')
+    romanNumeralsRE = re.compile(r'[IVX]+')
+
+    capsFields = []
+    for field, namepart in nameObject._asdict().items():
+        namepart = fixTexInNameElement(namepart)
+
+        try:
+            uni_namepart = biblib.algo.tex_to_unicode(namepart)
+        except biblib.messages.InputError:
+            uni_namepart = namepart
+            entry.pos.warn('Could not convert a name to unicode in entry {}: "{}"'.format(entry.key, namepart))
+
+        # uni_namepart = cleanUpNameElement(uni_namepart)
+
+        namepart_elements = uni_namepart.split()
+        for i, namepart_elem in enumerate(namepart_elements):
+            if len(namepart_elem) == 1:
+                continue  # A single character being "all-caps" is not relevant
+            # elif len(namepart_elem) == 2 and namepart_elem.endswith('.'):
+            #     continue  # Name initial
+            if field == 'first':
+                if initialsRE.fullmatch(namepart_elem):
+                    continue  # Part of first name that consists only of initials
+            if field == 'last':
+                if i == len(namepart_elements)-1:  # Check last element of last name
+                    if romanNumeralsRE.fullmatch(namepart_elem):
+                        continue  # Last part of last name might be a roman numeral (e.g. King Henry III)
+
+            if namepart_elem.isupper():
+                capsFields.append(field)
+    return capsFields
+
+
+def fixTexInNameElement(name_element):
+    name_element = name_element.replace("\\´", "\\'")
+    return name_element
+
+# def cleanUpNameElement(name_element):
+#     fixed_element = re.sub(r'\.(\w)', '. \g<1>', name_element)
+#
+#     if fixed_element != name_element:
+#         print('@@@')
+#         print(name_element)
+#         print(fixed_element)
+#     return fixed_element
+
+
 def findUnsecuredUppercase(entries, field):
     """
     Find entries that contain uppercase characters that are not secured by curly braces.
     The only uppercase character that needs no braces is the first letter of the title, as it is automatically
     converted to uppercase anyway.
 
-    Background: In most bibliography styles titles are by defauly displayed with only the first character being
+    Background: In most bibliography styles titles are by default displayed with only the first character being
     uppercase and all others are forced to be lowercase. If you want to display any other uppercase characters, you
     have to secure them by wrapping them in curly braces.
     :param entries:
@@ -558,8 +622,8 @@ def findBadPageNumbers(entries, tolerateSingleHyphens=True):
         pageRE = re.compile(r'^{0}(,{0})*$'.format(r'\d+((\-\-\d+)|(\+))?'))
 
     badEntries = []
-    for key, entry in getEntriesWithField(entries, "pages"):
-        pages = entry["pages"]
+    for key, entry in getEntriesWithField(entries, FIELD_PAGES):
+        pages = entry[FIELD_PAGES]
         if not pageRE.match(pages):
             badEntries.append(entry)
     return badEntries
