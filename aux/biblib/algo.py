@@ -143,11 +143,14 @@ class NameParser:
                     first = toks[:max(0, last_start-1)]
                     last = toks[last_start:]
             elif 2 <= len(parts) <= 3:
-                # "von Last, First[, Jr]"
+                # "von Last[, Jr], First"
                 von, last = self.__split_von_last(parts[0])
                 first = parts[1]
                 if len(parts) == 3:
-                    jr = parts[2]
+                    jr = parts[1]
+                    first = parts[2]
+                else:
+                    first = parts[1]
             else:
                 pos.raise_error(
                     'too many commas in name `{}\''.format(name_string))
