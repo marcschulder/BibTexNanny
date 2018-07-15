@@ -564,9 +564,8 @@ def findAllCapsNameElement(nameObject, entry):
         for i, namepart_elem in enumerate(namepart_elements):
             if len(namepart_elem) == 1:
                 continue  # A single character being "all-caps" is not relevant
-            if field == 'first':
-                if initialsRE.fullmatch(namepart_elem):
-                    continue  # Part of first name that consists only of initials
+            if initialsRE.fullmatch(namepart_elem):
+                continue  # Part of name that consists only of initials
             if field == 'last':
                 if i == len(namepart_elements)-1:  # Check last element of last name
                     if romanNumeralsRE.fullmatch(namepart_elem):
