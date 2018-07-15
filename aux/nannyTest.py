@@ -184,6 +184,7 @@ class TestBadPageNumbers(TestCase):
 
 
 class TestBadNames(TestCase):
+    # todo: Add more edge cases outlined by https://nwalsh.com/tex/texhelp/bibtx-23.html
     @staticmethod
     def getEntries4Name(nameStrings, field):
         entryDicts = [{field: name} for name in nameStrings]
@@ -242,5 +243,15 @@ class TestBadNames(TestCase):
     def test_findAllCapsName_LastnameNumerals(self):
         entries = self.getEntries4Name(['Micky Mouse III', 'Micky Mouse VI', 'Micky Mouse IX', 'Micky Mouse X'],
                                        FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEqual(entrykey2CapsNames, {})
+
+    def test_findAllCapsName_JuniorBasic(self):
+        entries = self.getEntries4Name(['Mickey D. Mouse Jr.'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEqual(entrykey2CapsNames, {})
+
+    def test_findAllCapsName_JuniorCommaSeparated(self):
+        entries = self.getEntries4Name(['Mouse, Jr., Mickey D.'], FIELD_AUTHOR)
         entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
         self.assertEqual(entrykey2CapsNames, {})
