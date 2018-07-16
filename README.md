@@ -94,8 +94,8 @@ The following fixes and changes should be made to _biblib_:
 	- [ ] **Name** formatting
 		- [ ] Change format of name to non-ambiguous "Last, First" format
 		- [ ] Fix special character formatting
-			- [ ] Use consistent braces format (e.g. write  `\"{o}` instead of `{\"o}`)
-			- [ ] Replace latex commands (e.g. replace `\textasciicaron{}e` with `\v{e}`)
+			- [ ] Use consistent braces format (e.g. write `{\"o}` instead of  `\"{o}`)
+			- [ ] Replace latex commands (e.g. replace `\textasciicaron{}e` with `{e}`)
 		- [ ] Fix all-caps names (`MICKEY MOUSE` or `Mickey MOUSE`)
 		- [ ] Fix initials format
 			- [ ] Initials must be followed by a period
