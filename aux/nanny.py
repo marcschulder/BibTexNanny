@@ -16,6 +16,7 @@ __author__ = 'Marc Schulder'
 FIELD_AUTHOR = 'author'
 FIELD_TITLE = 'title'
 FIELD_PAGES = 'pages'
+FIELD_EDITOR = 'editor'
 
 FIELD_IS_REQUIRED_AVAILABLE = 'required available'
 FIELD_IS_REQUIRED_MISSING = 'required missing'

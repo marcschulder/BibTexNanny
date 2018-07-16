@@ -153,14 +153,14 @@ def checkConsistency(entries, config):
 
     # All-caps name formatting
     if config.allcapsNames:
-        entrykey2CapsNames = nanny.findAllCapsName(entries, nanny.FIELD_AUTHOR)
-        if entrykey2CapsNames:
-            print(HEADLINE_PATTERN.format("Authors whose names are all-caps"))
-            for key, capsnames in entrykey2CapsNames.items():
-                # author = entries[key][nanny.FIELD_AUTHOR]
-                for capsname in capsnames:
-                    print("Entry {} has authors which are all-caps: {}".format(key, capsname.pretty()))
-            print()
+        for field in [nanny.FIELD_AUTHOR, nanny.FIELD_EDITOR]:
+            entrykey2CapsNames = nanny.findAllCapsName(entries, field)
+            if entrykey2CapsNames:
+                print(HEADLINE_PATTERN.format("{}s whose names are all-caps".format(field.capitalize())))
+                for key, capsnames in entrykey2CapsNames.items():
+                    for capsname in capsnames:
+                        print("Entry {} has {}s which are all-caps: {}".format(key, field, capsname.pretty()))
+                print()
 
     # Inconsistent location names
     if config.inconsistentLocations:
