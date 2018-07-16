@@ -11,37 +11,62 @@ The following fixes and changes should be made to _biblib_:
 
 - [x] Add BibDesk-compatibility mode for BibTex output
 - [ ] Fix issues with loading bad month information
-	- _Can't replicate anymore, not sure what changed._
-- [ ] Add ability to handle duplicate keys
+	- _Can't replicate issue anymore, not sure what changed._
+- [x] Add ability to handle duplicate keys
 - [ ] Prevent BibTex Parser from dropping metadata and comment lines
 	- [x] BibTexNanny internal work-around
+- **Tex-Unicode conversion**
+	- [ ] Add missing formatting options
+	- [ ] Add unicode2tex function
+
 
 # BibTex file consistency checker
 
 - [ ] Find **duplicates**
 	- [ ] Duplicate keys
-		- _Currently not possible because biblib won't load files with duplicate keys._
+		- _added biblib work-around to load files with duplicate keys._
 	- [x] Duplicate paper titles
 		- [ ] Grade badness of duplicate by how much of the rest matches
+		- [ ] Consider cases where duplicates might be acceptable
+			- [x] Pairs of entries for presentation and paper (what is the entry type for the presentation).
+				- _Allow users to define entry types that should be ignored when looking for duplicate titles. This way you can for example model presentations as _`@misc`_ entries and have them be ignored_
+			- [ ] Pre-print and published version of paper.
+			- [ ] Author who actually named different papers differently (in what cases would this happen?)
+			- [ ] Different editions of a book.
+			- [ ] Possibly paper and extended version of it as journal article.
 - [x] Warnings for **missing fields**
-	- [ ] Optional warning for (specific/all) optional fields
+	- [x] Optional warning for optional fields
 - [ ] Warnings for **bad formatting**
+	- [ ] Warning for non-standard entry type
 	- [x] Warnings for non-secured capitalisation in name field
 	- [ ] Warnings for unnecessary {}-wraps
-		- Curly braces are not only for uppercase characters but also for encoding special characters, e.g. \'{e} to get é
+		- [ ] Curly braces are not only for uppercase characters but also for encoding special characters, e.g. `\'{e}` to get `é`
+		- [ ] Allow user preference for wrapping characters or whole words.
+		- [ ] _What is the difference between single and double braces?_
 	- [x] Warnings for badly formatted in page numbers
+	- [ ] Find badly formatted names (author and editor fields)
+		- [ ] All-caps names
+		- [ ] Bad use of latex commands
+		- [ ] Missing spaces between initials
 	- [ ] Warning for all-caps texts
 	- [ ] Notice bad months
-	- [ ] Check if desired key format is followed
+	- [ ] Check if desired key format is followed (see _entry key format_)
 - [ ] Warnings for **inconsistent formatting**
-	- [ ] Different names for conferences (see _dictionary of conference names_)
-	- [ ] Name initials formatting
-	- [ ] Location names
+	- [ ] Different names for **conferences** (see _dictionary of conference names_)
+	- [ ] **Name** formatting
+		- [x] Names or parts of names written in all caps (`MICKEY MOUSE` or `Mickey MOUSE`)
+			- [ ] Identify when an all-caps name part is actually intials written without period or whitespace
+		- [x] Name initials
+			- [x] Initial written without period (`Mickey D Mouse`)
+			- [x] Multiple initials written without whitespace (`Mickey A.B. Mouse`)
+			- [ ] Multiple initials written without periods or whitespace (`Mickey AD Mouse`)
+	- [ ] **Location** names
 		- [ ] Indicate when there is a country without a city
 		- [ ] Indicate when there is a city without a country
 		- [ ] States missing from US locations
 	- [ ] Inferrable information for conferences/journals is inconsistent
 - [ ] Allow limiting search to citations found in aux file
+
 
 # BibTex Fixer
 
@@ -50,20 +75,34 @@ The following fixes and changes should be made to _biblib_:
 	- [ ] Add more inferrable fields (see _Field Inference_)
 	- [ ] Add functionality for mapping information across types (e.g. from _proceeding_ to _inproceedings_)
 - [ ] **Fix inconstistent fields**
-	- [ ] Replace conference name variations with main name (see _dictionary of conference names_)
-	- [ ] Expand name initials to full names
-	- [ ] Make locations more informative (City, [State], Country)
+	- [ ] Replace **conference** name variations with main name (see _dictionary of conference names_)
+	- [ ] Expand **name initials** to full names
+	- [ ] Make **locations** more informative (City, [State], Country)
 		- [ ] Add missing country
 		- [ ] Add missing city
-		- [ ] Add state (USA and Canada)
+		- [ ] Add state (USA only)
 		- [x] Extend state initials to full state name
 	- [ ] Have consistent file order
 - [ ] **Fix** **formatting**
 	- [x] Add wraps around capitalised characters in name field
+		- [ ] Add option to wrap entire words instead of only the capitalised characters
 	- [ ] Remove unnecessary {}-wraps
 	- [x] Fix badly formatted page numbers
 	- [ ] Fix all-caps text (but not single all caps words)
-	- [ ] Fix bad but understandable months (e.g. numbers)
+		- [ ] Separate handling for names
+	- [ ] Fix bad but understandable **months** (e.g. numbers)
+	- [ ] **Name** formatting
+		- [ ] Change format of name to non-ambiguous "Last, First" format
+		- [ ] Fix special character formatting
+			- [ ] Use consistent braces format (e.g. write  `\"{o}` instead of `{\"o}`)
+			- [ ] Replace latex commands (e.g. replace `\textasciicaron{}e` with `\v{e}`)
+		- [ ] Fix all-caps names (`MICKEY MOUSE` or `Mickey MOUSE`)
+		- [ ] Fix initials format
+			- [ ] Initials must be followed by a period
+			- [ ] Multiple initials must be separated by spaces
+- [ ] **Rename entry keys**
+	- [ ] Provide a format to specify the desired key names
+	- [ ] Key format might differ for different entry types.
 - [ ] **Multi-bibliography merger**
 	- [ ] Identify entries that are the same
 		- [ ] Option 1: Same key
@@ -72,6 +111,7 @@ The following fixes and changes should be made to _biblib_:
 		- [ ] Identical fields are accepted
 		- [ ] Fields available in only one version are accepted
 		- [ ] Fields that clash cause user prompt or trigger other fixer functions
+
 
 # BibTex simplifier
 
@@ -88,6 +128,7 @@ The following fixes and changes should be made to _biblib_:
 	- [ ] Shorten state to initials
 	- [ ] Copy location to address (even though technically it is incorrect)
 
+
 # Auxiliary
 
 
@@ -98,7 +139,10 @@ The following fixes and changes should be made to _biblib_:
 - [ ] How to link regularly named conferences with years where they were held in conjunction with something?
 - [ ] **Additional script** to suggest possible name variations
 
+
 ## **Key formatting**
+
+- [ ] There might already be an open source system for standardising BibTex keys. This is also used by Zotero. Gotra check that out.
 
 
 ### Relevant factors for key formatting
@@ -114,14 +158,17 @@ The following fixes and changes should be made to _biblib_:
 - [ ] Disambiguating characters
 	- [ ] lowercase a,b,c
 
+
 ### Common formats
 
 1. lastnameYEAR
 2. LastnameYEAR
-3. LastnameYEARtitleword
+3. LastnameYEARkeyword
 4. LastnameYEARdisambig
-5. TITLEWORD
-6. LastnameYEAR or TITLEWORD
+5. lastname_keyword_year
+6. TITLEWORD
+7. LastnameYEAR or KEYWORD
+
 
 ### How to choose format
 
@@ -133,18 +180,20 @@ The following fixes and changes should be made to _biblib_:
 3. Custom format
 	- Lots of work to implement, full functionality, probably quite flexible
 
+
 # Field Inference
 
-- [ ] **author**: journal + year + volume => month
-- [ ] **author**: journal + year + month => volume
+- [ ] **article**: journal + year + volume => month
+- [ ] **article**: journal + year + month => volume
 - [ ] **book**: booktitle + year +volume/number => **inbook**: author, editor,publisher, series, edition, month, publisher
 - [ ] **book**: booktitle + year +volume/number => **incollection:** editor, publisher, series, edition, month, publisher
 - [ ] **conference**: booktitle + year => address, month, editor, organization, publisher
-- [ ] **incbook**: title + year => address, month, editor, publisher
+- [ ] **inbook**: title + year => address, month, editor, publisher
 - [x] **incollection**: booktitle + year => address, month, editor, publisher
 - [x] i**nproceedings**: booktitle + year => address, month, editor, organization, publisher
 - [ ] **proceedings**: booktitle + year => i**nproceedings: **address, month, editor, organization, publisher
 - [ ] If proceedings title contains an index (e.g. "Proceedings of the 5th Conference on Examples") we can infer year and all other pieces of information from it.
+
 
 # BibTexNanny Input Parameters
 
@@ -152,6 +201,7 @@ The following fixes and changes should be made to _biblib_:
 ## Input methods
 
 - [x] Use Python's _configparser_, which allows INI-like config files
+
 
 ## Internal processing
 
@@ -163,6 +213,7 @@ The following fixes and changes should be made to _biblib_:
 		- As the tasks overlap considerably, there should be a NannyConfig superclass and inherriting classes for the components.
 		- Accessing config info should be done via functions, not fields, to allow custom processing of the stored information
 
+
 ## Required states for custom variables
 
 
@@ -171,12 +222,14 @@ The following fixes and changes should be made to _biblib_:
 - [x] True _(check value)_
 - [x] False _(don't check value)_
 
+
 ### Fixer
 
 - [x] True/Autofix/Auto _(autofix value)_
 - [x] Tryfix/Try _(autofix if trivial, otherwise prompt to fix)_
 - [x] Promptfix/Prompt _(Prompt to fix)_
 - [x] False _(don't check value)_
+
 
 ### Consistency + Fixer
 
@@ -187,6 +240,7 @@ How information for both scripts can be given in the same config file
 - [x] ~~Variables for only one of the two configs, e.g. _duplicateKeys-consistency_~~
 - [x] Different sections for giving instructions for both or just either
 
+
 ### Simplifier
 
 Should have separate config files.
@@ -194,6 +248,7 @@ Should have separate config files.
 - [ ] Blacklist: List fields that should be removed
 - [ ] Whitelist List only the fields that are wanted
 - [ ] Variables for conversion functions
+
 
 # ============================================================
 
@@ -212,6 +267,7 @@ Should have separate config files.
 3. Prompts during processing, asking for user decisions
 	- Could also be used to auto-generate config files
 
+
 # External information files
 
 
@@ -221,10 +277,12 @@ Should have separate config files.
 - **.sty:** LaTeX style file (can this contain the bst info?)
 - **.cls:** LaTeX class file (can this contain the bst info?)
 
+
 ## LaTeX temp files
 
 - **.aux:** Lists citations and labels
 	- Single line to parse: `\citation{citationlabel}`
+
 
 ## BibTexNanny files
 
@@ -234,6 +292,7 @@ Should have separate config files.
 	- Consistency checker config file
 	- Fixer config file
 	- Simplifier config file
+
 
 # BibTex field requirements
 
@@ -256,6 +315,7 @@ We need to be able to check the following aspects for fields:
 	1. In-built BibTex entry definitions
 	2. Config file for bibliography style requirements
 	3. Config file for simplification requirements
+
 
 # People working on related tools
 
