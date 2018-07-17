@@ -153,7 +153,7 @@ def checkConsistency(entries, config):
 
     # All-caps name formatting
     if config.allcapsNames:
-        for field in [nanny.FIELD_AUTHOR, nanny.FIELD_EDITOR]:
+        for field in nanny.PERSON_NAME_FIELDS:
             entrykey2CapsNames = nanny.findAllCapsName(entries, field)
             if entrykey2CapsNames:
                 print(HEADLINE_PATTERN.format("{}s whose names are all-caps".format(field.capitalize())))
@@ -169,6 +169,12 @@ def checkConsistency(entries, config):
     # Inconsistent inferrable information
     if config.inconsistentInferrableInfo:
         print(NOT_IMPLEMENTED_PATTERN.format("inconsistent inferrable information"))
+
+    # if nanny.warnings:
+    #     print("===== Encountered Warnings =====")
+    #     for warning in nanny.warnings:
+    #         print('  {}'.format(warning))
+    #     print()
 
 
 def main():

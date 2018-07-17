@@ -13,10 +13,15 @@ from aux import biblib
 
 __author__ = 'Marc Schulder'
 
+FIELD_ADDRESS = 'address'
 FIELD_AUTHOR = 'author'
-FIELD_TITLE = 'title'
-FIELD_PAGES = 'pages'
 FIELD_EDITOR = 'editor'
+FIELD_PAGES = 'pages'
+FIELD_PUBLISHER = 'publisher'
+FIELD_TITLE = 'title'
+
+NAME_FIELDS = [FIELD_AUTHOR, FIELD_EDITOR, FIELD_PUBLISHER]
+PERSON_NAME_FIELDS = [FIELD_AUTHOR, FIELD_EDITOR]  # List of names without "publisher", which is often an organisation
 
 FIELD_IS_REQUIRED_AVAILABLE = 'required available'
 FIELD_IS_REQUIRED_MISSING = 'required missing'
@@ -524,9 +529,8 @@ def findAllCapsName(entries, field):
     for key, entry in getEntriesWithField(entries, field):
         authors = entry.authors(field)
         for author in authors:
-            capsFields = findAllCapsNameElement(author, entry)
-            if len(capsFields) > 0:
-                # print(author)
+            capsElems = findAllCapsNameElement(author, entry)
+            if len(capsElems) > 0:
                 capsNames = entrykey2CapsNames.setdefault(key, [])
                 capsNames.append(author)
     return entrykey2CapsNames
@@ -567,7 +571,7 @@ def findAllCapsNameElement(nameObject, entry):
                 continue  # A single character being "all-caps" is not relevant
             if initialsRE.fullmatch(namepart_elem):
                 continue  # Part of name that consists only of initials
-            if field == 'last':
+            if field in {'last', 'jr'}:
                 if i == len(namepart_elements)-1:  # Check last element of last name
                     if romanNumeralsRE.fullmatch(namepart_elem):
                         continue  # Last part of last name might be a roman numeral (e.g. King Henry III)
