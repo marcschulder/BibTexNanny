@@ -240,19 +240,6 @@ def fixEntries(entries, config, show):
                     logger.addChange4CurrentEntry('Converted LaTeX to Unicode', value, convertedValue)
         logger.printLog()
 
-    # Unicode to BibTex formatting
-    if config.unicode2bibtex:
-        logger = ChangeLogger("Converting Unicode to BibTeX",
-                              verbosity=show.unicode2bibtex)
-        for entry_key, entry in entries.items():
-            logger.setCurrentKey(entry_key)
-            for field, value in entry.items():
-                convertedValue = convertUnicode2BibTeX(value)
-                if convertedValue != value:
-                    entry[field] = convertedValue
-                    logger.addChange4CurrentEntry('Converted Unicode to BibTeX', value, convertedValue)
-        logger.printLog()
-
     # Check for Duplicates #
     # Duplicate keys
     if config.duplicateKeys:
@@ -264,7 +251,7 @@ def fixEntries(entries, config, show):
         print(NOT_IMPLEMENTED_PATTERN.format("duplicate titles"))
 
     # Bad Formatting #
-    # Replace non-ASCII chracters in key
+    # Replace non-ASCII characters in key
     if config.asciiKeys:
         keyChanges = []
         logger = ChangeLogger("Converting entry keys to be ASCII-compliant",
@@ -287,7 +274,7 @@ def fixEntries(entries, config, show):
     if config.unsecuredTitleChars:
         logger = ChangeLogger("Securing uppercase characters in titles with curly braces",
                               verbosity=show.unsecuredTitleChars)
-        key2unsecuredChars = nanny.findUnsecuredUppercase(entries, field="title")
+        key2unsecuredChars = nanny.findUnsecuredUppercase(entries, field=nanny.FIELD_TITLE)
         if key2unsecuredChars:
             for key, unsecuredChars in key2unsecuredChars.items():
                 logger.setCurrentKey(key)
@@ -403,7 +390,7 @@ def fixBadPageNumbers(pages):
     return pages
 
 
-def fixNames(entries, logger, fixLaTeX, fixUnicode):
+def fixNames(entries, logger, fixLaTeX=True, fixUnicode=True):
     key2badEntries = OrderedDict()
     for entry_key, entry in entries.items():
         logger.setCurrentKey(entry_key)
