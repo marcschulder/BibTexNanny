@@ -366,31 +366,31 @@ class TestBadNames(TestCase):
         self.assertEqual(xpect_entries, fixed_entries)
 
     def test_fixNames_ControlSequenceBibTeX(self):
-        input_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}ckey'], FIELD_AUTHOR)
+        input_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}{\c c}key'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEmpty(fixed_entries)
 
     def test_fixNames_ControlSequenceLaTeXBraces(self):
-        input_entries = self.getEntries4Name([r'M\u{o}\"{u}\v{s}e, M\'{i}ckey'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}ckey'], FIELD_AUTHOR)
+        input_entries = self.getEntries4Name([r'M\u{o}\"{u}\v{s}e, M\'{i}\c{c}key'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}{\c c}key'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEqual(xpect_entries, fixed_entries)
 
     def test_fixNames_ControlSequenceLaTeXDirect(self):
-        input_entries = self.getEntries4Name([r'M\u o\"u\v se, M\'ickey'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}ckey'], FIELD_AUTHOR)
+        input_entries = self.getEntries4Name([r'M\u o\"u\v se, M\'i\c ckey'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}{\c c}key'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEqual(xpect_entries, fixed_entries)
 
     def test_fixNames_ControlSequenceLaTeXEmptybraces(self):
-        input_entries = self.getEntries4Name([r'M\u{}ou\v{}se, Mickey'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name([r'M{\u o}u{\v s}e, Mickey'], FIELD_AUTHOR)
+        input_entries = self.getEntries4Name([r'M\u{}ou\v{}se, Mi\c{}ckey'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name([r'M{\u o}u{\v s}e, Mi{\c c}key'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEqual(xpect_entries, fixed_entries)
 
     def test_fixNames_ControlSequenceUnicode(self):
-        input_entries = self.getEntries4Name(['Mŏüše, Míckey'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}ckey'], FIELD_AUTHOR)
+        input_entries = self.getEntries4Name(['Mŏüše, Míçkey'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}{\c c}key'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEqual(xpect_entries, fixed_entries)
 
