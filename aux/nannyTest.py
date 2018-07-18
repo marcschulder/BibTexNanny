@@ -146,42 +146,42 @@ class TestBadPageNumbers(TestCase):
     def test_fixBadPageNumbers_range_correct(self):
         bad_range = '153--176'
         good_range = '153--176'
-        self.assertEqual(fixer.fixBadPageNumbers(bad_range), good_range)
+        self.assertEqual(good_range, fixer.fixBadPageNumbers(bad_range))
 
     def test_fixBadPageNumbers_range_space(self):
         bad_range = '153 -- 176'
         good_range = '153--176'
-        self.assertEqual(fixer.fixBadPageNumbers(bad_range), good_range)
+        self.assertEqual(good_range, fixer.fixBadPageNumbers(bad_range))
 
     def test_fixBadPageNumbers_range_morespace(self):
         bad_range = '153   --   176'
         good_range = '153--176'
-        self.assertEqual(fixer.fixBadPageNumbers(bad_range), good_range)
+        self.assertEqual(good_range, fixer.fixBadPageNumbers(bad_range))
 
     def test_fixBadPageNumbers_range_1hyphen(self):
         bad_range = '153-176'
         good_range = '153--176'
-        self.assertEqual(fixer.fixBadPageNumbers(bad_range), good_range)
+        self.assertEqual(good_range, fixer.fixBadPageNumbers(bad_range))
 
     def test_fixBadPageNumbers_range_3hyphens(self):
         bad_range = '153---176'
         good_range = '153--176'
-        self.assertEqual(fixer.fixBadPageNumbers(bad_range), good_range)
+        self.assertEqual(good_range, fixer.fixBadPageNumbers(bad_range))
 
     def test_fixBadPageNumbers_range_4hyphens(self):
         bad_range = '153----176'
         good_range = '153--176'
-        self.assertEqual(fixer.fixBadPageNumbers(bad_range), good_range)
+        self.assertEqual(good_range, fixer.fixBadPageNumbers(bad_range))
 
     def test_fixBadPageNumbers_range_endash(self):
         bad_range = '153–176'
         good_range = '153--176'
-        self.assertEqual(fixer.fixBadPageNumbers(bad_range), good_range)
+        self.assertEqual(good_range, fixer.fixBadPageNumbers(bad_range))
 
     def test_fixBadPageNumbers_range_emdash(self):
         bad_range = '153—176'
         good_range = '153--176'
-        self.assertEqual(fixer.fixBadPageNumbers(bad_range), good_range)
+        self.assertEqual(good_range, fixer.fixBadPageNumbers(bad_range))
 
 
 class TestBadNames(TestCase):
@@ -195,9 +195,9 @@ class TestBadNames(TestCase):
 
     def assertEmpty(self, collection):
         if type(collection) == dict:
-            self.assertEqual(collection, {})
+            self.assertEqual({}, collection)
         elif type(collection) == OrderedDict:
-            self.assertEqual(collection, OrderedDict())
+            self.assertEqual(OrderedDict(), collection)
         else:
             assert len(collection) == 0
 
@@ -366,19 +366,31 @@ class TestBadNames(TestCase):
         self.assertEqual(xpect_entries, fixed_entries)
 
     def test_fixNames_ControlSequenceBibTeX(self):
-        input_entries = self.getEntries4Name(['Mo{\\"u}se, M{\\\'i}ckey'], FIELD_AUTHOR)
+        input_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}ckey'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEmpty(fixed_entries)
 
     def test_fixNames_ControlSequenceLaTeXBraces(self):
-        input_entries = self.getEntries4Name(['Mo\\"{u}se, M\\\'{i}ckey'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name(['Mo{\\"u}se, M{\\\'i}ckey'], FIELD_AUTHOR)
+        input_entries = self.getEntries4Name([r'M\u{o}\"{u}\v{s}e, M\'{i}ckey'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}ckey'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEqual(xpect_entries, fixed_entries)
 
     def test_fixNames_ControlSequenceLaTeXDirect(self):
-        input_entries = self.getEntries4Name(['Mo\\"use, M\\\'ickey'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name(['Mo{\\"u}se, M{\\\'i}ckey'], FIELD_AUTHOR)
+        input_entries = self.getEntries4Name([r'M\u o\"u\v se, M\'ickey'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}ckey'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_ControlSequenceLaTeXEmptybraces(self):
+        input_entries = self.getEntries4Name([r'M\u{}ou\v{}se, Mickey'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name([r'M{\u o}u{\v s}e, Mickey'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_ControlSequenceUnicode(self):
+        input_entries = self.getEntries4Name(['Mŏüše, Míckey'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}ckey'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEqual(xpect_entries, fixed_entries)
 
@@ -540,51 +552,43 @@ class TestBadNames(TestCase):
 
     def test_fixNames_FirstnameTwocharAllCaps_noVowel(self):
         input_entries = self.getEntries4Name(['Mouse, MD'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name(['Mouse, MD'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
-        self.assertEqual(xpect_entries, fixed_entries)
+        self.assertEmpty(fixed_entries)
 
     def test_fixNames_FirstnameThreecharAllCaps_noVowel(self):
         input_entries = self.getEntries4Name(['Mouse, MDR'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name(['Mouse, MDR'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
-        self.assertEqual(xpect_entries, fixed_entries)
+        self.assertEmpty(fixed_entries)
 
     def test_fixNames_MiddlenameTwocharAllCaps_noVowel(self):
         input_entries = self.getEntries4Name(['Mouse, Mickey MD'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name(['Mouse, Mickey MD'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
-        self.assertEqual(xpect_entries, fixed_entries)
+        self.assertEmpty(fixed_entries)
 
     def test_fixNames_MiddlenameThreecharAllCaps_noVowel(self):
         input_entries = self.getEntries4Name(['Mouse, Mickey MDR'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name(['Mouse, Mickey MDR'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
-        self.assertEqual(xpect_entries, fixed_entries)
+        self.assertEmpty(fixed_entries)
 
     def test_fixNames_FirstnameTwocharAllCaps_withVowel(self):
         input_entries = self.getEntries4Name(['Mouse, AD'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name(['Mouse, AD'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
-        self.assertEqual(xpect_entries, fixed_entries)
+        self.assertEmpty(fixed_entries)
 
     def test_fixNames_FirstnameThreecharAllCaps_withVowel(self):
         input_entries = self.getEntries4Name(['Mouse, ADR'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name(['Mouse, ADR'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
-        self.assertEqual(xpect_entries, fixed_entries)
+        self.assertEmpty(fixed_entries)
 
     def test_fixNames_MiddlenameTwocharAllCaps_withVowel(self):
         input_entries = self.getEntries4Name(['Mouse, Mickey AD'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name(['Mouse, Mickey AD'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
-        self.assertEqual(xpect_entries, fixed_entries)
+        self.assertEmpty(fixed_entries)
 
     def test_fixNames_MiddlenameThreecharAllCaps_withVowel(self):
         input_entries = self.getEntries4Name(['Mouse, Mickey ADR'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name(['Mouse, Mickey ADR'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
-        self.assertEqual(xpect_entries, fixed_entries)
+        self.assertEmpty(fixed_entries)
 
     def test_fixNames_LastnameAllCaps(self):
         input_entries = self.getEntries4Name(['MOUSE, Mickey'], FIELD_AUTHOR)
@@ -592,15 +596,38 @@ class TestBadNames(TestCase):
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEqual(xpect_entries, fixed_entries)
 
-    def test_fixNames_OrganisationAllCaps_Escaped(self):
-        input_entries = self.getEntries4Name(['{DOG Project}'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name(['{DOG Project}'], FIELD_AUTHOR)
+    def test_fixNames_LastnameNumerals(self):
+        input_entries = self.getEntries4Name(['Mouse III, Mickey'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEmpty(fixed_entries)
+
+    @expectedFailure
+    def test_fixNames_LastnameNumerals_BadFormat(self):
+        input_entries = self.getEntries4Name(['Mickey Mouse III'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse III, Mickey'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_FullnameAllCaps_LastnameNumerals(self):
+        input_entries = self.getEntries4Name(['MOUSE III, MICKEY'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse III, Mickey'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEqual(xpect_entries, fixed_entries)
 
     @expectedFailure
-    def test_fixNames_OrganisationAllCaps_notEscaped(self):
-        input_entries = self.getEntries4Name(['DOG Project'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name(['DOG Project'], FIELD_AUTHOR)
+    def test_fixNames_FullnameAllCaps_LastnameNumerals_BadFormat(self):
+        input_entries = self.getEntries4Name(['MICKEY MOUSE III'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse III, Mickey'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_OrganisationAllCaps_Escaped(self):
+        input_entries = self.getEntries4Name(['{DOG Project}'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEmpty(fixed_entries)
+
+    @expectedFailure
+    def test_fixNames_OrganisationAllCaps_notEscaped(self):
+        input_entries = self.getEntries4Name(['DOG Project'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEmpty(fixed_entries)

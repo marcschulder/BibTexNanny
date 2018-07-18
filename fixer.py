@@ -445,16 +445,17 @@ def convertUnicode2BibTeX(string):
     for char in string:
         if char in unicode2bibtex:
             unicode_chars.append(unicode2bibtex[char])
-        # elif char in unicodeCombiningCharacter2bibtex:
-        #     pass
-        # elif lastChar in unicodeCombiningCharacter2bibtex:
-        #     combinedCharacter = unicodeCombiningCharacter2bibtex[lastChar].format(char)
-        #     unicode_chars.append(combinedCharacter)
-        #     print(lastChar, char, combinedCharacter)
+        elif char in unicodeCombiningCharacter2bibtex:
+            pass
+            if unicode_chars[-1] == ' ':
+                del unicode_chars[-1]
+        elif lastChar in unicodeCombiningCharacter2bibtex:
+            combinedCharacter = unicodeCombiningCharacter2bibtex[lastChar].format(char)
+            unicode_chars.append(combinedCharacter)
         else:
             unicode_chars.append(char)
         lastChar = char
-    return ''.join([unicode2bibtex.get(char, char) for char in string])
+    return ''.join(unicode_chars)
 
 
 def main():
