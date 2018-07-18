@@ -372,12 +372,9 @@ class TeXProcessor:
             nval = self._expand(macro)
             if nval is None:
                 if macro.startswith('\\'):
-                    # pos.raise_error('unknown macro `{}\''.format(macro))
-                    print('unknown macro `{}\''.format(macro))
+                    pos.warn('unknown macro `{}\''.format(macro))
                 else:
-                    # pos.raise_error(
-                    #     'unknown special character `{}\''.format(macro))
-                    print('unknown special character `{}\''.format(macro))
+                    pos.warn('unknown special character `{}\''.format(macro))
                 nval = macro
             self.__data = self.__data[:m.start()] + nval + \
                           self.__data[self.__off:]
@@ -388,8 +385,7 @@ class TeXProcessor:
     def _scan_argument(self):
         """Scan and return a macro argument."""
         if self.__off >= len(self.__data):
-            print('macro argument expected')
-            # self.__pos.raise_error('macro argument expected')
+            self.__pos.warn('macro argument expected')
             return ''
         elif self.__data[self.__off] == '{':
             start = self.__off
@@ -413,8 +409,7 @@ class TeXProcessor:
     def _scan_mathmode(self):
         """Scan and return a macro argument."""
         if self.__off >= len(self.__data):
-            print('mathmode expected')
-            # self.__pos.raise_error('macro argument expected')
+            self.__pos.warn('mathmode expected')
             return None
         else:
             start = self.__off
