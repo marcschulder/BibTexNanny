@@ -43,7 +43,7 @@ unicode2bibtex = {
     "\u00D9": "{\\`U}",
     "\u00F9": "{\\`u}",
     "\u0300": "\\`{}",
-    ## Accute Accent: \'
+    ## Acute Accent: \'
     "\u00C1": "{\\'A}",
     "\u0386": "{\\'}A",
     "\u00E1": "{\\'a}",
@@ -226,17 +226,17 @@ unicode2bibtex = {
     "\u0163": "{\\c t}",
     ### Other accents that seem to be standard
     ## Ring over the letter: \r
-    "\u016E": "{\\rU}",
-    "\u016F": "{\\ru}",
-    ## Ogonek: \k
-    "\u0104": "{\\kA}",
-    "\u0105": "{\\ka}",
-    "\u0118": "{\\kE}",
-    "\u0119": "{\\ke}",
-    "\u012E": "{\\kI}",
-    "\u012F": "{\\ki}",
-    "\u0172": "{\\kU}",
-    "\u0173": "{\\ku}",
+    "\u016E": "{\\r U}",
+    "\u016F": "{\\r u}",
+    ## Ogonek: \k  (requires T1 Unicode encoding)
+    "\u0104": "{\\k A}",
+    "\u0105": "{\\k a}",
+    "\u0118": "{\\k E}",
+    "\u0119": "{\\k e}",
+    "\u012E": "{\\k I}",
+    "\u012F": "{\\k i}",
+    "\u0172": "{\\k U}",
+    "\u0173": "{\\k u}",
 }
 
 unicodeCombiningCharacter2bibtex = {
@@ -246,9 +246,10 @@ unicodeCombiningCharacter2bibtex = {
     "\u0307": "{{\\.{}}}",
     "\u0301": "{{\\'{}}}",
     "\u0308": "{{\\\"{}}}",
-    "\u030A": "{{\\r {}}}",
     "\u030C": "{{\\v {}}}",
     "\u0306": "{{\\u {}}}",
     "\u030B": "{{\\H {}}}",
     "\u0327": "{{\\c {}}}",
+    "\u030A": "{{\\r {}}}",
+    "\u0328": "{{\\k {}}}",
 }

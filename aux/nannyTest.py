@@ -42,6 +42,37 @@ def getStringEntry(field2value, key=DEFAULT_KEY):
     return entry
 
 
+class TestUnicode2BibTeX(TestCase):
+    def convert2bibtex(self, text):
+        text = fixer.convertLaTeX2Unicode(text)
+        text = fixer.convertUnicode2BibTeX(text)
+        return text
+
+    def test_convertToBibTeX_Ampersand(self):
+        input_text = r'Mickey & Minnie'
+        xpect_text = r'Mickey {\&} Minnie'
+        fixed_text = self.convert2bibtex(input_text)
+        self.assertEqual(xpect_text, fixed_text)
+
+    def test_convertToBibTeX_EscapedAmpersand(self):
+        input_text = r'Mickey \& Minnie'
+        xpect_text = r'Mickey {\&} Minnie'
+        fixed_text = self.convert2bibtex(input_text)
+        self.assertEqual(xpect_text, fixed_text)
+
+    def test_convertToBibTeX_EscapedAmpersand_LaTeXCommandStandalone(self):
+        input_text = r'Mickey & Minnie \textasciidieresis'
+        xpect_text = r'Mickey {\&} Minnie {\"}'
+        fixed_text = self.convert2bibtex(input_text)
+        self.assertEqual(xpect_text, fixed_text)
+
+    def test_convertToBibTeX_EscapedAmpersand_LaTeXCommandApplied(self):
+        input_text = r'Mickey & Minnie \textasciidieresis{u}'
+        xpect_text = r'Mickey {\&} Minnie {\"u}'
+        fixed_text = self.convert2bibtex(input_text)
+        self.assertEqual(xpect_text, fixed_text)
+
+
 class TestFindDuplicateTitles(TestCase):
     def test_findDuplicateTitles_Identical(self):
         title = 'Towards a new test environment'

@@ -208,16 +208,36 @@ class ChangeLogger:
 def fixEntries(entries, config, show):
     # Fix encoding #
     # LaTeX to BibTex formatting
-    if config.latex2unicode:
-        logger = ChangeLogger("Converting LaTeX to Unicode",
-                              verbosity=show.latex2unicode)
+    if config.latex2unicode or config.unicode2bibtex:
+        if config.latex2unicode and config.unicode2bibtex:
+            logger = ChangeLogger("Converting LaTeX/Unicode to BibTeX",
+                                  verbosity=max(show.latex2unicode, show.unicode2bibtex))
+        elif config.latex2unicode:
+            logger = ChangeLogger("Converting LaTeX to Unicode",
+                                  verbosity=show.latex2unicode)
+        else:
+            logger = ChangeLogger("Converting Unicode to BibTeX",
+                                  verbosity=show.unicode2bibtex)
+
         for entry_key, entry in entries.items():
             logger.setCurrentKey(entry_key)
             for field, value in entry.items():
-                convertedValue = convertLaTeX2Unicode(value)
+                convertedValue = value
+                if '&' in value:
+                    print('@@@', convertedValue)
+                if config.latex2unicode:
+                    convertedValue = convertLaTeX2Unicode(convertedValue)
+                    if '&' in value:
+                        print('###', convertedValue)
+                if config.unicode2bibtex:
+                    convertedValue = convertUnicode2BibTeX(convertedValue)
+                    if '&' in value:
+                        print('$$$', convertedValue)
+                        print()
+
                 if convertedValue != value:
                     entry[field] = convertedValue
-                    logger.addChange4CurrentEntry('Converted LaTeX to Unicode:', value, convertedValue)
+                    logger.addChange4CurrentEntry('Converted LaTeX to Unicode', value, convertedValue)
         logger.printLog()
 
     # Unicode to BibTex formatting
@@ -230,7 +250,7 @@ def fixEntries(entries, config, show):
                 convertedValue = convertUnicode2BibTeX(value)
                 if convertedValue != value:
                     entry[field] = convertedValue
-                    logger.addChange4CurrentEntry('Converted Unicode to BibTeX:', value, convertedValue)
+                    logger.addChange4CurrentEntry('Converted Unicode to BibTeX', value, convertedValue)
         logger.printLog()
 
     # Check for Duplicates #
@@ -310,7 +330,7 @@ def fixEntries(entries, config, show):
     if config.ambiguousNames:
         logger = ChangeLogger("Fixing names",
                               verbosity=show.ambiguousNames)
-        badNameEntries = fixNames(entries, logger)
+        badNameEntries = fixNames(entries, logger, not config.latex2unicode, not config.unicode2bibtex)
         logger.printLog()
 
     # All-caps name formatting
@@ -383,7 +403,7 @@ def fixBadPageNumbers(pages):
     return pages
 
 
-def fixNames(entries, logger):
+def fixNames(entries, logger, fixLaTeX, fixUnicode):
     key2badEntries = OrderedDict()
     for entry_key, entry in entries.items():
         logger.setCurrentKey(entry_key)
@@ -403,7 +423,7 @@ def fixNames(entries, logger):
                     if name.is_others():
                         fixed_names.append(name)
                     else:
-                        fixed_name = fixControlSequences(name, logger)
+                        fixed_name = fixControlSequences(name, logger, fixLaTeX, fixUnicode)
                         fixed_name = fixNameInitials(fixed_name, logger)
                         fixed_name = fixAllCapsNames(fixed_name, logger)
                         fixed_names.append(fixed_name)
@@ -436,16 +456,21 @@ def getNamesString(names, template='{von} {last}, {jr}, {first}'):
         return ' and '.join([name.pretty(template) for name in names])
 
 
-def fixControlSequences(name, logger):
-    name_dict = name._asdict()
-    for name_key, name_elem in name_dict.items():
-        if len(name_elem) > 0:
-            name_elem = convertLaTeX2Unicode(name_elem)
-            name_elem = convertUnicode2BibTeX(name_elem)
-            name_dict[name_key] = name_elem
-    fixed_name = name._replace(**name_dict)
-    logger.logNameObjectDiff('Fixed control sequences', name, fixed_name)
-    return fixed_name
+def fixControlSequences(name, logger, fixLaTeX, fixUnicode):
+    if fixLaTeX or fixUnicode:
+        name_dict = name._asdict()
+        for name_key, name_elem in name_dict.items():
+            if len(name_elem) > 0:
+                if fixLaTeX:
+                    name_elem = convertLaTeX2Unicode(name_elem)
+                if fixUnicode:
+                    name_elem = convertUnicode2BibTeX(name_elem)
+                name_dict[name_key] = name_elem
+        fixed_name = name._replace(**name_dict)
+        logger.logNameObjectDiff('Fixed control sequences', name, fixed_name)
+        return fixed_name
+    else:
+        return name
 
 
 def fixNameInitials(name, logger):
@@ -496,10 +521,11 @@ def fixAllCapsNames(name, logger):
 
 def convertLaTeX2Unicode(string):
     string = nanny.fixTexInNameElement(string)
-    try:
-        string = biblib.algo.tex_to_unicode(string)
-    except biblib.messages.InputError as e:
-        pass
+    # try:
+    #     string = biblib.algo.tex_to_unicode(string)
+    # except biblib.messages.InputError as e:
+    #     pass
+    string = biblib.algo.tex_to_unicode(string)
     # todo: More Latex conversions
     return string
 
@@ -520,6 +546,11 @@ def convertUnicode2BibTeX(string):
         else:
             unicode_chars.append(char)
         lastChar = char
+
+    if lastChar in unicodeCombiningCharacter2bibtex:
+        combinedCharacter = unicodeCombiningCharacter2bibtex[lastChar].format('')
+        unicode_chars.append(combinedCharacter)
+
     return ''.join(unicode_chars)
 
 

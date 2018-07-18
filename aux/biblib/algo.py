@@ -372,9 +372,13 @@ class TeXProcessor:
             nval = self._expand(macro)
             if nval is None:
                 if macro.startswith('\\'):
-                    pos.raise_error('unknown macro `{}\''.format(macro))
-                pos.raise_error(
-                    'unknown special character `{}\''.format(macro))
+                    # pos.raise_error('unknown macro `{}\''.format(macro))
+                    print('unknown macro `{}\''.format(macro))
+                else:
+                    # pos.raise_error(
+                    #     'unknown special character `{}\''.format(macro))
+                    print('unknown special character `{}\''.format(macro))
+                nval = macro
             self.__data = self.__data[:m.start()] + nval + \
                           self.__data[self.__off:]
             self.__off = m.start() + len(nval)
@@ -384,8 +388,10 @@ class TeXProcessor:
     def _scan_argument(self):
         """Scan an return a macro argument."""
         if self.__off >= len(self.__data):
-            self.__pos.raise_error('macro argument expected')
-        if self.__data[self.__off] == '{':
+            print('macro argument expected')
+            # self.__pos.raise_error('macro argument expected')
+            return ''
+        elif self.__data[self.__off] == '{':
             start = self.__off
             depth = 0
             while depth or self.__off == start:
@@ -431,6 +437,11 @@ class TeXToUnicode(TeXProcessor):
         '\\aa': 'å', '\\AA': 'Å', '\\l': 'ł', '\\L': 'Ł',
         # Other defs from plain.tex
         '\\_': '_', '\\dag': '†', '\\ddag': '‡', '\\S': '§', '\\P': '¶',
+        # LaTeX commands
+        '\\textquotedblleft': "``",
+        '\\textquotedblright': "''",
+        '\\textendash': '\u2013',
+        '\\textemdash': '\u2014',
     }
 
     # TeX accent control sequences to Unicode combining characters
@@ -442,7 +453,23 @@ class TeXToUnicode(TeXProcessor):
         '\\d': '\u0323', '\\b': '\u0331', '\\c': '\u0327',
         # Other accents that seem to be standard, but I can't find
         # their definitions
-        '\\r': '\u030A', '\\k': '\u0328'
+        '\\r': '\u030A', '\\k': '\u0328',
+        # LaTeX commands
+        '\\textasciigrave': '\u0300',
+        '\\textasciiacute': '\u0301',
+        '\\textasciicaron': '\u030C',
+        '\\textasciibreve': '\u0306',
+        '\\textasciimacron': '\u0304',
+        '\\textasciicircum': '\u0302',
+        # '\\.': '\u0307',
+        '\\textacutedbl': '\u030B',
+        '\\textasciitilde': '\u0303',
+        '\\textasciidieresis': '\u0308',
+        # '\\d': '\u0323',
+        # '\\b': '\u0331',
+        # '\\c': '\u0327',
+        # '\\r': '\u030A',
+        # '\\k': '\u0328',
     }
 
     def process(self, tex_string, pos):
