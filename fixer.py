@@ -207,12 +207,30 @@ class ChangeLogger:
 def fixEntries(entries, config, show):
     # Fix encoding #
     # LaTeX to BibTex formatting
-    if config.latex2bibtex:
-        print(NOT_IMPLEMENTED_PATTERN.format("LaTeX to BibTex formatting"))
+    if config.latex2unicode:
+        logger = ChangeLogger("Converting LaTeX to Unicode",
+                              verbosity=show.latex2unicode)
+        for entry_key, entry in entries.items():
+            logger.setCurrentKey(entry_key)
+            for field, value in entry.items():
+                convertedValue = convertLaTeX2Unicode(value)
+                if convertedValue != value:
+                    entry[field] = convertedValue
+                    logger.addChange4CurrentEntry('Converted LaTeX to Unicode:', value, convertedValue)
+        logger.printLog()
 
     # Unicode to BibTex formatting
     if config.unicode2bibtex:
-        print(NOT_IMPLEMENTED_PATTERN.format("unicode to BibTex formatting"))
+        logger = ChangeLogger("Converting Unicode to BibTeX",
+                              verbosity=show.unicode2bibtex)
+        for entry_key, entry in entries.items():
+            logger.setCurrentKey(entry_key)
+            for field, value in entry.items():
+                convertedValue = convertUnicode2BibTeX(value)
+                if convertedValue != value:
+                    entry[field] = convertedValue
+                    logger.addChange4CurrentEntry('Converted Unicode to BibTeX:', value, convertedValue)
+        logger.printLog()
 
     # Check for Duplicates #
     # Duplicate keys
@@ -276,8 +294,8 @@ def fixEntries(entries, config, show):
         logger.printLog()
 
     # All-caps name formatting
-    if config.ambiguousNames:
-        print(NOT_IMPLEMENTED_PATTERN.format("all-caps name formatting"))
+    # if config.ambiguousNames:
+    #     print(NOT_IMPLEMENTED_PATTERN.format("all-caps name formatting"))
 
     # Inconsistent location names
     if config.inconsistentLocations:
@@ -402,7 +420,7 @@ def fixControlSequences(name, logger):
     name_dict = name._asdict()
     for name_key, name_elem in name_dict.items():
         if len(name_elem) > 0:
-            name_elem = convertLaTeX2BibTeX(name_elem)
+            name_elem = convertLaTeX2Unicode(name_elem)
             name_elem = convertUnicode2BibTeX(name_elem)
             name_dict[name_key] = name_elem
     fixed_name = name._replace(**name_dict)
@@ -456,14 +474,14 @@ def fixAllCapsNames(name, logger):
     return fixed_name
 
 
-def convertLaTeX2BibTeX(string):
+def convertLaTeX2Unicode(string):
     string = nanny.fixTexInNameElement(string)
     try:
         string = biblib.algo.tex_to_unicode(string)
     except biblib.messages.InputError as e:
         pass
     # todo: More Latex conversions
-    return convertUnicode2BibTeX(string)
+    return string
 
 
 def convertUnicode2BibTeX(string):
@@ -474,7 +492,7 @@ def convertUnicode2BibTeX(string):
             unicode_chars.append(unicode2bibtex[char])
         elif char in unicodeCombiningCharacter2bibtex:
             pass
-            if unicode_chars[-1] == ' ':
+            if len(unicode_chars) > 0 and unicode_chars[-1] == ' ':
                 del unicode_chars[-1]
         elif lastChar in unicodeCombiningCharacter2bibtex:
             combinedCharacter = unicodeCombiningCharacter2bibtex[lastChar].format(char)

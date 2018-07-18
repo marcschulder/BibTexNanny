@@ -82,7 +82,7 @@ class NannyConfig(ABC):
     FALLBACK = None
 
     def __init__(self, filename=None, fallback=FALLBACK):
-        self.latex2bibtex = fallback
+        self.latex2unicode = fallback
         self.unicode2bibtex = fallback
         self.duplicateKeys = fallback
         self.duplicateTitles = fallback
@@ -111,7 +111,7 @@ class NannyConfig(ABC):
 
     def setUpConfig(self, config):
         section = config[self.SECTION]
-        self.latex2bibtex = self._getConfigValue(section, 'LaTeX to BibTeX')
+        self.latex2unicode = self._getConfigValue(section, 'LaTeX to Unicode')
         self.unicode2bibtex = self._getConfigValue(section, 'Unicode to BibTeX')
         self.duplicateKeys = self._getConfigValue(section, 'Duplicate Keys')
         self.duplicateTitles = self._getConfigValue(section, 'Duplicate Titles')
