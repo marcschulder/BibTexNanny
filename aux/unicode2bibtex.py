@@ -31,7 +31,7 @@ unicode2bibtex = {
     '—': '---',
     ##### TeX accent control sequences to Unicode combining characters
     ### Accents defined in plain.tex
-    ## \`
+    ## Grave Accent: \`
     "\u00C0": "{\\`A}",
     "\u00E0": "{\\`a}",
     "\u00C8": "{\\`E}",
@@ -43,7 +43,7 @@ unicode2bibtex = {
     "\u00D9": "{\\`U}",
     "\u00F9": "{\\`u}",
     "\u0300": "\\`{}",
-    ## \'
+    ## Accute Accent: \'
     "\u00C1": "{\\'A}",
     "\u0386": "{\\'}A",
     "\u00E1": "{\\'a}",
@@ -82,7 +82,7 @@ unicode2bibtex = {
     # "\u040C": "\\cyrchar{\\'\\CYRK}",
     # "\u0453": "\\cyrchar{\\'\\cyrg}",
     # "\u045C": "\\cyrchar{\\'\\cyrk}",
-    ## \v
+    ## Caron over the letter: \v
     "\u01cd": "{\\v A}",
     "\u01ce": "{\\v a}",
     "\u010C": "{\\v C}",
@@ -111,7 +111,7 @@ unicode2bibtex = {
     "\u01D4": "{\\v U}",
     "\u017D": "{\\v Z}",
     "\u017E": "{\\v z}",
-    ## \u
+    ## Breve over the letter: \u
     "\u0102": "{\\u A}",
     "\u0103": "{\\u a}",
     "\u0114": "{\\u E}",
@@ -126,7 +126,7 @@ unicode2bibtex = {
     "\u021B": "{\\u t}",
     "\u016C": "{\\u U}",
     "\u016D": "{\\u u}",
-    ## \=
+    ## Macron Accent: \=
     "\u0100": "{\\=A}",
     "\u0101": "{\\=a}",
     "\u0112": "{\\=E}",
@@ -137,7 +137,7 @@ unicode2bibtex = {
     "\u014D": "{\\=o}",
     "\u016A": "{\\=U}",
     "\u016B": "{\\=u}",
-    ## \^
+    ## Circumflex: \^
     "\u00C2": "{\\^A}",
     "\u00E2": "{\\^a}",
     "\u0108": "{\\^C}",
@@ -162,7 +162,7 @@ unicode2bibtex = {
     "\u0175": "{\\^w}",
     "\u0176": "{\\^Y}",
     "\u0177": "{\\^y}",
-    ## \.
+    ## Dot over the letter: \.
     "\u010A": "{\\.C}",
     "\u010B": "{\\.c}",
     "\u0116": "{\\.E}",
@@ -172,12 +172,12 @@ unicode2bibtex = {
     "\u0130": "{\\.I}",
     "\u017B": "{\\.Z}",
     "\u017C": "{\\.z}",
-    ## \H
+    ## Double Acute: \H
     "\u0150": "{\\H O}",
     "\u0151": "{\\H o}",
     "\u0170": "{\\H U}",
     "\u0171": "{\\H u}",
-    ## \~
+    ## Tilde: \~
     "\u00C3": "{\\~A}",
     "\u00E3": "{\\~a}",
     "\u0128": "{\\~I}",
@@ -188,7 +188,7 @@ unicode2bibtex = {
     "\u00F5": "{\\~o}",
     "\u0168": "{\\~U}",
     "\u0169": "{\\~u}",
-    ## \"
+    ## Umlaut/Trema/Dieresis: \"
     "\u00C4": "{\\\"A}",
     "\u00E4": "{\\\"a}",
     "\u00CB": "{\\\"E}",
@@ -203,9 +203,9 @@ unicode2bibtex = {
     "\u1e85": "{\\\"w}",
     "\u0178": "{\\\"Y}",
     "\u00FF": "{\\\"y}",
-    ## \d
-    ## \b
-    ## \c
+    ## Dot under the letter: \d
+    ## Bar under the letter: \b
+    ## Cedilla: \c
     "\u00C7": "{\\c C}",
     "\u00E7": "{\\c c}",
     "\u0122": "{\\c G}",
@@ -223,10 +223,10 @@ unicode2bibtex = {
     "\u0162": "{\\c T}",
     "\u0163": "{\\c t}",
     ### Other accents that seem to be standard
-    ## \r
+    ## Ring over the letter: \r
     "\u016E": "{\\rU}",
     "\u016F": "{\\ru}",
-    ## \k
+    ## Ogonek: \k
     "\u0104": "{\\kA}",
     "\u0105": "{\\ka}",
     "\u0118": "{\\kE}",
