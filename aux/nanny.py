@@ -152,6 +152,7 @@ class NannyConfig(ABC):
 
 
 class FieldInferrer:
+    # TODO: Replace inferrer logging with ChangeLogger
     ACTION_ADD = 'ADD'
     
     EventTuple = namedtuple('EventTuple', ('action', 'key', 'field', 'value', 'isRequiredField'))
@@ -258,7 +259,7 @@ class FieldInferrer:
         else:
             return None
 
-    def addInformation(self, entry, addRequiredFields, addOptionalFields, verbose=False):
+    def addInformation(self, entry, addRequiredFields, addOptionalFields, logger, verbose=False):
         # Maps a tuple of fields A to a tuple of fields B.
         # If all fields A are known, all fields B can potentially be inferred from another entry
         # with the same values for A.
@@ -298,6 +299,13 @@ class FieldInferrer:
                                         else:
                                             print('Adding optional field "{}" to key "{}": {}'.format(field, entry.key,
                                                                                                       value))
+
+                                    if isRequiredField:
+                                        infoTemplate = 'Adding required field {}'
+                                    else:
+                                        infoTemplate = 'Adding optional field {}'
+                                    logger.addChange(entry.key, infoTemplate.format(field), None, value)
+
                                     self.log.append(self.EventTuple(action=self.ACTION_ADD, key=entry.key, field=field,
                                                                     value=value, isRequiredField=isRequiredField))
                                     entry[field] = value

@@ -4,14 +4,13 @@ Fixes BibTeX entries.
 
 import re
 import argparse
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 
 from aux import nanny, biblib
 from aux.unicode2bibtex import unicode2bibtex, unicodeCombiningCharacter2bibtex
 
 __author__ = 'Marc Schulder'
 
-HEADLINE_PATTERN = "===== {} ====="
 NOT_IMPLEMENTED_PATTERN = "Auto-fix for {} not yet implemented"
 
 RE_PAGES_RANGE = re.compile(r'(?P<num1>[0-9]+)(\s*(-+|–|—)\s*)(?P<num2>[0-9]+)')
@@ -116,6 +115,9 @@ class FixerSilentModeConfig(nanny.NannyConfig):
 
 
 class ChangeLogger:
+    HEADLINE_PATTERN = "===== {} ====="
+    SUMMARY_HEADLINE_PATTERN = "===== Summary: {} ====="
+
     def __init__(self, headline=None, verbosity=None):
         self.headline = headline
         self.verbosity = verbosity
@@ -123,17 +125,52 @@ class ChangeLogger:
         self.key2changes = OrderedDict()
 
     def __str__(self):
+        self.getLog()
+
+    def getLog(self):
         lines = []
 
         if self.headline is not None:
-            lines.append(self.headline)
+            lines.append(self.HEADLINE_PATTERN.format(self.headline))
 
         for key, changes in self.key2changes.items():
             lines.append('Changes to entry {}'.format(key))
             for info, original, changed in changes:
-                indent = ' ' * len(info)
-                lines.append('  {}: {}'.format(info, original))
-                lines.append('{} => {}'.format(indent, changed))
+                if original is None and changed is None:
+                    lines.append('  {}')
+                elif changed is None:
+                    lines.append('  {}: {}'.format(info, original))
+                elif original is None:
+                    lines.append('  {}: {}'.format(info, changed))
+                else:
+                    indent = ' ' * len(info)
+                    lines.append('  {}: {}'.format(info, original))
+                    lines.append('{} => {}'.format(indent, changed))
+
+        return '\n'.join(lines)
+
+    def getSummary(self):
+        lines = []
+
+        if self.headline is not None:
+            lines.append(self.SUMMARY_HEADLINE_PATTERN.format(self.headline))
+
+        lines.append('{} entries affected'.format(len(self.key2changes)))
+
+        eventCounter = Counter()
+        for key, changes in self.key2changes.items():
+            for info, original, changed in changes:
+                eventCounter[info] += 1
+
+        if len(eventCounter) > 0:
+            max_n = eventCounter.most_common(1)[0][1]
+            max_digits = len(str(max_n))
+
+            lines.append('Actions:')
+            for event, count in eventCounter.most_common():
+                digits = len(str(count))
+                indent = ' ' * (max_digits - digits)
+                lines.append('  {}{} x {}'.format(indent, count, event))
 
         return '\n'.join(lines)
 
@@ -159,8 +196,11 @@ class ChangeLogger:
 
     def printLog(self):
         if self.containsChanges:
-            if self.verbosity >= FixerSilentModeConfig.SUMMARY:
-                print(self)
+            if self.verbosity >= FixerSilentModeConfig.SHOW:
+                print(self.getLog())
+                print()
+            elif self.verbosity >= FixerSilentModeConfig.SUMMARY:
+                print(self.getSummary())
                 print()
 
 
@@ -187,49 +227,41 @@ def fixEntries(entries, config, show):
     # Bad Formatting #
     # Unsecured uppercase characters in titles
     if config.unsecuredTitleChars:
+        logger = ChangeLogger("Securing uppercase characters in titles with curly braces",
+                              verbosity=show.unsecuredTitleChars)
         key2unsecuredChars = nanny.findUnsecuredUppercase(entries, field="title")
         if key2unsecuredChars:
-            if show.unsecuredTitleChars >= FixerSilentModeConfig.SUMMARY:
-                print(HEADLINE_PATTERN.format("Securing uppercase characters in titles with curly braces"))
             for key, unsecuredChars in key2unsecuredChars.items():
+                logger.setCurrentKey(key)
                 entry = entries[key]
                 original_title = entry[nanny.FIELD_TITLE]
                 fixed_title = fixUnsecuredUppercase(original_title, unsecuredChars)
                 entry[nanny.FIELD_TITLE] = fixed_title
-                if show.unsecuredTitleChars >= FixerSilentModeConfig.SHOW:
-                    print("Fixed {} unsecured uppercase characters in entry {}".format(len(unsecuredChars), key))
-                    print("  Before: {}".format(original_title))
-                    print("  After:  {}".format(fixed_title))
-            if show.unsecuredTitleChars >= FixerSilentModeConfig.SUMMARY:
-                print()
-
+                logger.addChange4CurrentEntry('Fixed {} unsecured uppercase characters'.format(len(unsecuredChars)),
+                                              original_title, fixed_title)
+        logger.printLog()
     # Unnecessary curly braces
     if config.unnecessaryBraces:
         print(NOT_IMPLEMENTED_PATTERN.format("unnecessary curly braces"))
 
     # Bad page number hyphens
     if config.badPageNumbers:
+        logger = ChangeLogger("Fixing page numbers",
+                              verbosity=show.badPageNumbers)
         badPageNumberEntries = nanny.findBadPageNumbers(entries)
         if badPageNumberEntries:
-            if show.badPageNumbers >= FixerSilentModeConfig.SUMMARY:
-                print(HEADLINE_PATTERN.format("Fixing page numbers"))
             for entry in badPageNumberEntries:
+                logger.setCurrentKey(entry.key)
                 original_pages = entry[nanny.FIELD_PAGES]
                 fixed_pages = fixBadPageNumbers(original_pages)
                 
                 if fixed_pages == original_pages:
                     # Fixing page numbers failed
-                    if show.badPageNumbers >= FixerSilentModeConfig.SHOW:
-                        print("Failed to fix bad page numbers for entry {}: {}".format(entry.key, original_pages))
+                    logger.addChange4CurrentEntry('Failed to fix bad page numbers', original_pages, None)
                 else:
                     # Fixing page numbers forked
                     entry[nanny.FIELD_PAGES] = fixed_pages
-                    if show.badPageNumbers >= FixerSilentModeConfig.SHOW:
-                        print("Fixed page numbers for entry {}".format(entry.key))
-                        print("  Before: {}".format(original_pages))
-                        print("  After:  {}".format(fixed_pages))
-            if show.badPageNumbers >= FixerSilentModeConfig.SUMMARY:
-                print()
+                    logger.addChange4CurrentEntry('Fixed page numbers', original_pages, fixed_pages)
 
     # Inconsistent Formatting #
     # Inconsistent names for conferences
@@ -249,50 +281,37 @@ def fixEntries(entries, config, show):
 
     # Inconsistent location names
     if config.inconsistentLocations:
+        logger = ChangeLogger("Fixing incomplete location names",
+                              verbosity=show.inconsistentLocations)
         locationKnowledge = nanny.LocationKnowledge(countryFile='info/countries.config',
                                                     statesFile='info/states.config')
-        if show.inconsistentLocations >= FixerSilentModeConfig.SUMMARY:
-            print(HEADLINE_PATTERN.format("Fixing incomplete location names"))
-            # TODO: Also use information from other entries to expand this one
+        # TODO: Also use information from other entries to expand this one
         for key, entry in nanny.getEntriesWithField(entries, nanny.FIELD_ADDRESS):
+            logger.setCurrentKey(key)
             address = entry[nanny.FIELD_ADDRESS]
             location = nanny.Location(address, locationKnowledge)
             location.expandInformation()
             fixedAddress = location.getString()
             if fixedAddress != address:
                 entry[nanny.FIELD_ADDRESS] = fixedAddress
-                if show.inconsistentLocations >= FixerSilentModeConfig.SHOW:
-                    print("Fixed address info for entry {}".format(entry.key))
-                    print("  Before: {}".format(address))
-                    print("  After:  {}".format(fixedAddress))
-        if show.inconsistentLocations >= FixerSilentModeConfig.SUMMARY:
-            print()
+                logger.addChange4CurrentEntry('Fixed address info', address, fixedAddress)
+        logger.printLog()
 
     # Missing fields #
     # Missing required fields
     if config.anyMissingFields:
-        if show.anyMissingFields >= FixerSilentModeConfig.SUMMARY:
-            print(HEADLINE_PATTERN.format("Adding missing information"))
-        
+        logger = ChangeLogger("Adding missing information",
+                              verbosity=show.anyMissingFields)
         # Infer information
         inferrer = nanny.FieldInferrer(entries)
         for key, entry in entries.items():
             inferrer.addInformation(entry,
                                     addRequiredFields=config.missingRequiredFields,
                                     addOptionalFields=config.missingOptionalFields,
+                                    logger=logger,
                                     verbose=show.anyMissingFields >= FixerSilentModeConfig.SHOW)
         
-        # Summary
-        if show.anyMissingFields >= FixerSilentModeConfig.SUMMARY:
-            action2field2count = inferrer.getFieldChangeCount()
-            field2count = action2field2count.get(inferrer.ACTION_ADD)
-            if field2count:
-                print("Summary: Added information")
-                for field, count in field2count.items():
-                    print('  Added {count} "{field}" fields'.format(field=field, count=count))
-        
-        if show.anyMissingFields >= FixerSilentModeConfig.SUMMARY:
-            print()
+        logger.printLog()
 
         # if config.missingRequiredFields:
         #     print(NOT_IMPLEMENTED_PATTERN.format("missing required fields"))
