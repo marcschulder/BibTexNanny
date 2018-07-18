@@ -386,7 +386,7 @@ class TeXProcessor:
         return self.__data
 
     def _scan_argument(self):
-        """Scan an return a macro argument."""
+        """Scan and return a macro argument."""
         if self.__off >= len(self.__data):
             print('macro argument expected')
             # self.__pos.raise_error('macro argument expected')
@@ -410,6 +410,24 @@ class TeXProcessor:
             self.__off += 1
             return arg
 
+    def _scan_mathmode(self):
+        """Scan and return a macro argument."""
+        if self.__off >= len(self.__data):
+            print('mathmode expected')
+            # self.__pos.raise_error('macro argument expected')
+            return None
+        else:
+            start = self.__off
+            while True:
+                self.__off += 1
+                if self.__off >= len(self.__data):
+                    self.__off = start
+                    return None
+                elif self.__data[self.__off] == '$':
+                    self.__off += 1
+                    break
+            return self.__data[start:self.__off]
+
     def _expand(self, cs):
         """Return the expansion of an active character or control sequence.
 
@@ -430,7 +448,7 @@ class TeXToUnicode(TeXProcessor):
         # Active characters
         '~': '\u00A0',
         # chardefs from plain.tex
-        '\\%': '%', '\\&': '&', '\\#': '#', '\\$': '$', '\\ss': 'ß',
+        '\\%': '%', '\\&': '&', '\\#': '#', '\\$': '\\$', '\\ss': 'ß',
         '\\ae': 'æ', '\\oe': 'œ', '\\o': 'ø',
         '\\AE': 'Æ', '\\OE': 'Œ', '\\O': 'Ø',
         '\\i': 'ı', '\\j': 'ȷ',
@@ -488,9 +506,16 @@ class TeXToUnicode(TeXProcessor):
         return unicode_string
 
     def _expand(self, cs):
-        if cs in self._SIMPLE:
+        if cs == '$':
+            arg = self._scan_mathmode()
+            if arg is None:
+                return cs
+            else:
+                print('****', arg)
+                return cs + arg
+        elif cs in self._SIMPLE:
             return self._SIMPLE[cs]
-        if cs in self._ACCENTS:
+        elif cs in self._ACCENTS:
             arg = self._scan_argument()
             if len(arg) == 0:
                 seq, rest = ' ' + self._ACCENTS[cs], ''

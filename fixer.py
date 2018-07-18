@@ -520,22 +520,35 @@ def convertLaTeX2Unicode(string):
 def convertUnicode2BibTeX(string):
     unicode_chars = []
     lastChar = None
-    for char in string:
-        if char in unicode2bibtex:
-            unicode_chars.append(unicode2bibtex[char])
-        elif char in unicodeCombiningCharacter2bibtex:
-            pass
-            if len(unicode_chars) > 0 and unicode_chars[-1] == ' ':
-                del unicode_chars[-1]
-        elif lastChar in unicodeCombiningCharacter2bibtex:
-            combinedCharacter = unicodeCombiningCharacter2bibtex[lastChar].format(char)
-            unicode_chars.append(combinedCharacter)
-        else:
+    isMathMode = False
+    for c, char in enumerate(string):
+        if isMathMode:
             unicode_chars.append(char)
+            if char == '$' and lastChar != '\\':
+                isMathMode = False
+        else:
+            if char == '$' and lastChar != '\\':  # Start of mathmode
+                print(c, string)
+                unicode_chars.append(char)
+                isMathMode = True
+            elif char == '$' and lastChar == '\\':  # Special handling for escaped dollar sign
+                del unicode_chars[-1]
+                unicode_chars.append(unicode2bibtex[char])
+            elif char in unicode2bibtex:  # Unicode character requires conversion
+                unicode_chars.append(unicode2bibtex[char])
+            elif char in unicodeCombiningCharacter2bibtex:  # Is combining character, read next char
+                pass
+                if len(unicode_chars) > 0 and unicode_chars[-1] == ' ':  # Delete unicode space
+                    del unicode_chars[-1]
+            elif lastChar in unicodeCombiningCharacter2bibtex:  # Merge char with previous combining char
+                combinedCharacter = unicodeCombiningCharacter2bibtex[lastChar].format(char)
+                unicode_chars.append(combinedCharacter)
+            else:  # Not a special char, read in normally
+                unicode_chars.append(char)
         lastChar = char
 
     # Clean up if final char was a combining character
-    if lastChar in unicodeCombiningCharacter2bibtex:
+    if not isMathMode and lastChar in unicodeCombiningCharacter2bibtex:
         combinedCharacter = unicodeCombiningCharacter2bibtex[lastChar].format('{}')
         unicode_chars.append(combinedCharacter)
 

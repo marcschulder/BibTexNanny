@@ -62,13 +62,43 @@ class TestUnicode2BibTeX(TestCase):
 
     def test_convertToBibTeX_EscapedAmpersand_LaTeXCommandStandalone(self):
         input_text = r'Mickey & Minnie \textasciidieresis'
-        xpect_text = r'Mickey {\&} Minnie {\"}'
+        xpect_text = r'Mickey {\&} Minnie {\"{}}'
         fixed_text = self.convert2bibtex(input_text)
         self.assertEqual(xpect_text, fixed_text)
 
     def test_convertToBibTeX_EscapedAmpersand_LaTeXCommandApplied(self):
         input_text = r'Mickey & Minnie \textasciidieresis{u}'
         xpect_text = r'Mickey {\&} Minnie {\"u}'
+        fixed_text = self.convert2bibtex(input_text)
+        self.assertEqual(xpect_text, fixed_text)
+
+    def test_convertToBibTeX_Mathmode_OpenAtStart(self):
+        input_text = r'${_\ast}$'
+        xpect_text = r'${_\ast}$'
+        fixed_text = self.convert2bibtex(input_text)
+        self.assertEqual(xpect_text, fixed_text)
+
+    def test_convertToBibTeX_Mathmode_OpenInMiddle(self):
+        input_text = r'The 11$^\text{th}$ hour'
+        xpect_text = r'The 11$^\text{th}$ hour'
+        fixed_text = self.convert2bibtex(input_text)
+        self.assertEqual(xpect_text, fixed_text)
+
+    def test_convertToBibTeX_MathmodeUnclosed_OpenInMiddle(self):
+        input_text = r'The 11$^\text{th} hour'
+        xpect_text = r'The 11$^\text{th} hour'
+        fixed_text = self.convert2bibtex(input_text)
+        self.assertEqual(xpect_text, fixed_text)
+
+    def test_convertToBibTeX_MathmodeUnclosed_OpenAtEnd(self):
+        input_text = r'The 11th hour$'
+        xpect_text = r'The 11th hour$'
+        fixed_text = self.convert2bibtex(input_text)
+        self.assertEqual(xpect_text, fixed_text)
+
+    def test_convertToBibTeX_EscapedDollar(self):
+        input_text = r'Deeds for \$ and more \$\$\$'
+        xpect_text = r'Deeds for {\$} and more {\$}{\$}{\$}'
         fixed_text = self.convert2bibtex(input_text)
         self.assertEqual(xpect_text, fixed_text)
 
@@ -407,6 +437,7 @@ class TestBadNames(TestCase):
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEqual(xpect_entries, fixed_entries)
 
+    @expectedFailure
     def test_fixNames_ControlSequenceLaTeXDirect(self):
         input_entries = self.getEntries4Name([r'M\u o\"u\v se, M\'i\c ckey'], FIELD_AUTHOR)
         xpect_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}{\c c}key'], FIELD_AUTHOR)
