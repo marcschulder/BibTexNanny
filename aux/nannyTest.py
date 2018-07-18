@@ -1,5 +1,6 @@
 import sys
-from unittest import TestCase
+from unittest import TestCase, expectedFailure
+from collections import OrderedDict
 
 import fixer
 from aux import nanny
@@ -192,76 +193,414 @@ class TestBadNames(TestCase):
         entries = parse(entriesString)
         return entries
 
+    def assertEmpty(self, collection):
+        if type(collection) == dict:
+            self.assertEqual(collection, {})
+        elif type(collection) == OrderedDict:
+            self.assertEqual(collection, OrderedDict())
+        else:
+            assert len(collection) == 0
+
     def test_findAllCapsName_basicName(self):
         entries = self.getEntries4Name(['Mickey Mouse'], FIELD_AUTHOR)
         entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
-        self.assertEqual(entrykey2CapsNames, {})
+        self.assertEmpty(entrykey2CapsNames)
 
-    def test_findAllCapsName_basicNameAllCaps(self):
+    def test_findAllCapsName_basicTwoNames(self):
+        entries = self.getEntries4Name(['Mickey Mouse and Minie Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    def test_findAllCapsName_basicNameAndOthers(self):
+        entries = self.getEntries4Name(['Mickey Mouse and others'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    def test_findAllCapsName_basicTwoNamesAndOthers(self):
+        entries = self.getEntries4Name(['Mickey Mouse and Minie Mouse and others'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    def test_findAllCapsName_FullNameAllCaps(self):
         entries = self.getEntries4Name(['MICKEY MOUSE'], FIELD_AUTHOR)
         entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
         self.assertEqual(entrykey2CapsNames,
                          {'foobar0': [algo.Name(first='MICKEY', von='', last='MOUSE', jr='')]})
 
-    def test_findAllCapsName_FirstnameIsInitial(self):
-        entries = self.getEntries4Name(['M. Mouse'], FIELD_AUTHOR)
-        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
-        self.assertEqual(entrykey2CapsNames, {})
-
-    def test_findAllCapsName_FirstnameIsInitialNoperiod(self):
-        entries = self.getEntries4Name(['M Mouse'], FIELD_AUTHOR)
-        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
-        self.assertEqual(entrykey2CapsNames, {})
-
-    def test_findAllCapsName_FirstnameContainsInitial(self):
-        entries = self.getEntries4Name(['Mickey D. Mouse'], FIELD_AUTHOR)
-        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
-        self.assertEqual(entrykey2CapsNames, {})
-
-    def test_findAllCapsName_FirstnameInitialsSpaced(self):
-        entries = self.getEntries4Name(['M. D. Mouse'], FIELD_AUTHOR)
-        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
-        self.assertEqual(entrykey2CapsNames, {})
-
-    def test_findAllCapsName_FirstnameInitialsNospace(self):
-        entries = self.getEntries4Name(['M.D. Mouse'], FIELD_AUTHOR)
-        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
-        self.assertEqual(entrykey2CapsNames, {})
-
-    def test_findAllCapsName_FirstnameInitialsNoperiods(self):
-        entries = self.getEntries4Name(['MD Mouse'], FIELD_AUTHOR)
-        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
-        self.assertEqual(entrykey2CapsNames,
-                         {'foobar0': [algo.Name(first='MD', von='', last='Mouse', jr='')]})
-
-    def test_findAllCapsName_LastnameAllcaps(self):
+    def test_findAllCapsName_LastnameAllCaps(self):
         entries = self.getEntries4Name(['Mickey MOUSE'], FIELD_AUTHOR)
         entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
         self.assertEqual(entrykey2CapsNames,
                          {'foobar0': [algo.Name(first='Mickey', von='', last='MOUSE', jr='')]})
 
+    def test_findAllCapsName_FirstnameAllCaps(self):
+        entries = self.getEntries4Name(['MICKEY Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEqual(entrykey2CapsNames,
+                         {'foobar0': [algo.Name(first='MICKEY', von='', last='Mouse', jr='')]})
+
+    def test_findAllCapsName_FirstnameIsInitial(self):
+        entries = self.getEntries4Name(['M. Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    def test_findAllCapsName_FirstnameIsInitialNoperiod(self):
+        entries = self.getEntries4Name(['M Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    def test_findAllCapsName_MiddlenameInitial(self):
+        entries = self.getEntries4Name(['Mickey D. Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    def test_findAllCapsName_MiddlenameInitialNoperiod(self):
+        entries = self.getEntries4Name(['Mickey D Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    def test_findAllCapsName_MiddlenameTwoInitialsSpaced(self):
+        entries = self.getEntries4Name(['Mickey D. R. Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    def test_findAllCapsName_MiddlenameTwoInitialsNospace(self):
+        entries = self.getEntries4Name(['Mickey D.R. Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    def test_findAllCapsName_MiddlenameTwoInitialsNoperiod(self):
+        entries = self.getEntries4Name(['Mickey D R Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    @expectedFailure
+    def test_findAllCapsName_MiddlenameTwoInitialsNoperiodNospace(self):
+        entries = self.getEntries4Name(['Mickey D.R Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    @expectedFailure
+    def test_findAllCapsName_MiddlenameTwoInitialsOneperiodNospace(self):
+        entries = self.getEntries4Name(['Mickey DR Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    def test_findAllCapsName_TwoInitialsSpaced(self):
+        entries = self.getEntries4Name(['M. D. Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    def test_findAllCapsName_ThreeInitialsSpaced(self):
+        entries = self.getEntries4Name(['M. D. R. Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    def test_findAllCapsName_TwoInitialsNospace(self):
+        entries = self.getEntries4Name(['M.D. Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    def test_findAllCapsName_ThreeInitialsNospace(self):
+        entries = self.getEntries4Name(['M.D.R. Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    def test_findAllCapsName_TwoInitialsNoperiods(self):
+        entries = self.getEntries4Name(['M D Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    def test_findAllCapsName_ThreeInitialsNoperiods(self):
+        entries = self.getEntries4Name(['M D R Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    @expectedFailure
+    def test_findAllCapsName_TwoInitialsNoperiodNospace(self):
+        entries = self.getEntries4Name(['MD Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
+    @expectedFailure
+    def test_findAllCapsName_ThreeInitialsNoperiodNospace(self):
+        entries = self.getEntries4Name(['MDR Mouse'], FIELD_AUTHOR)
+        entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
+        self.assertEmpty(entrykey2CapsNames)
+
     def test_findAllCapsName_LastnameNumerals(self):
         entries = self.getEntries4Name(['Mickey Mouse III', 'Mickey Mouse VI', 'Mickey Mouse IX', 'Mickey Mouse X'],
                                        FIELD_AUTHOR)
         entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
-        self.assertEqual(entrykey2CapsNames, {})
+        self.assertEmpty(entrykey2CapsNames)
 
     def test_findAllCapsName_JuniorBasic(self):
         entries = self.getEntries4Name(['Mickey D. Mouse Jr.'], FIELD_AUTHOR)
         entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
-        self.assertEqual(entrykey2CapsNames, {})
+        self.assertEmpty(entrykey2CapsNames)
 
     def test_findAllCapsName_JuniorCommaSeparated(self):
         entries = self.getEntries4Name(['Mouse, Jr., Mickey D.'], FIELD_AUTHOR)
         entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
-        self.assertEqual(entrykey2CapsNames, {})
+        self.assertEmpty(entrykey2CapsNames)
 
     def test_findAllCapsName_NameSpecialchar(self):
         entries = self.getEntries4Name(['M{\\\'i}ckey Mo{\\"u}se'], FIELD_AUTHOR)
         entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
-        self.assertEqual(entrykey2CapsNames, {})
+        self.assertEmpty(entrykey2CapsNames)
 
     def test_findAllCapsName_NameSecured(self):
         entries = self.getEntries4Name(['{ACME Unlimited}'], FIELD_AUTHOR)
         entrykey2CapsNames = nanny.findAllCapsName(entries, FIELD_AUTHOR)
-        self.assertEqual(entrykey2CapsNames, {})
+        self.assertEmpty(entrykey2CapsNames)
+
+    def test_fixNames_BasicName(self):
+        input_entries = self.getEntries4Name(['Mouse, Mickey'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEmpty(fixed_entries)
+
+    def test_fixNames_FormatBasic(self):
+        input_entries = self.getEntries4Name(['Mickey Mouse'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, Mickey'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_ControlSequenceBibTeX(self):
+        input_entries = self.getEntries4Name(['Mo{\\"u}se, M{\\\'i}ckey'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEmpty(fixed_entries)
+
+    def test_fixNames_ControlSequenceLaTeXBraces(self):
+        input_entries = self.getEntries4Name(['Mo\\"{u}se, M\\\'{i}ckey'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mo{\\"u}se, M{\\\'i}ckey'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_ControlSequenceLaTeXDirect(self):
+        input_entries = self.getEntries4Name(['Mo\\"use, M\\\'ickey'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mo{\\"u}se, M{\\\'i}ckey'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_FirstnameIsInitial(self):
+        input_entries = self.getEntries4Name(['Mouse, M.'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEmpty(fixed_entries)
+
+    def test_fixNames_FirstnameIsInitialNoperiod(self):
+        input_entries = self.getEntries4Name(['Mouse, M'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, M.'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_MiddlenameInitial(self):
+        input_entries = self.getEntries4Name(['Mouse, Mickey D.'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEmpty(fixed_entries)
+
+    def test_fixNames_MiddlenameInitialNoperiod(self):
+        input_entries = self.getEntries4Name(['Mouse, Mickey D'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, Mickey D.'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_TwoInitialsSpaced(self):
+        input_entries = self.getEntries4Name(['Mouse, M. D.'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEmpty(fixed_entries)
+
+    def test_fixNames_ThreeInitialsSpaced(self):
+        input_entries = self.getEntries4Name(['Mouse, M. D. R.'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEmpty(fixed_entries)
+
+    def test_fixNames_TwoInitialsNospace(self):
+        input_entries = self.getEntries4Name(['Mouse, M.D.'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, M. D.'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_ThreeInitialsNospace(self):
+        input_entries = self.getEntries4Name(['Mouse, M.D.R.'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, M. D. R.'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_TwoInitialsNoperiod(self):
+        input_entries = self.getEntries4Name(['Mouse, M D'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, M. D.'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_ThreeInitialsNoperiod(self):
+        input_entries = self.getEntries4Name(['Mouse, M D R'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, M. D. R.'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    @expectedFailure
+    def test_fixNames_TwoInitialsNoperiodNospace(self):
+        input_entries = self.getEntries4Name(['Mouse, MD'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, M. D.'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    @expectedFailure
+    def test_fixNames_ThreeInitialsNoperiodNospace(self):
+        input_entries = self.getEntries4Name(['Mouse, MDR'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, M. D. R.'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_TwoInitialsOneperiodNospace(self):
+        input_entries = self.getEntries4Name(['Mouse, M.D'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, M. D.'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    @expectedFailure
+    def test_fixNames_TwoInitialsNoperiodsNospace_notAllCaps(self):
+        input_entries = self.getEntries4Name(['Mouse, MD'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, M. D.'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    @expectedFailure
+    def test_fixNames_ThreeInitialsNoperiodsNospace_notAllCaps(self):
+        input_entries = self.getEntries4Name(['Mouse, MDR'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, M. D. R.'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    @expectedFailure
+    def test_fixNames_ThreeUSDepartmentInitials(self):
+        input_entries = self.getEntries4Name(['U.S. Department of Increased Entertainment'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEmpty(fixed_entries)
+
+    def test_fixNames_FullnameAllCaps(self):
+        input_entries = self.getEntries4Name(['MOUSE, MICKEY'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, Mickey'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_FullnameAllCaps_FirstnameTwochars_noVowel(self):
+        input_entries = self.getEntries4Name(['MOUSE, MD'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, MD'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_FullnameAllCaps_FirstnameThreecharAllCaps_noVowel(self):
+        input_entries = self.getEntries4Name(['MOUSE, MDR'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, MDR'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_FullnameAllCaps_MiddlenameTwocharAllCaps_noVowel(self):
+        input_entries = self.getEntries4Name(['MOUSE, MICKEY MD'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, Mickey MD'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_FullnameAllCaps_MiddlenameThreecharAllCaps_noVowel(self):
+        input_entries = self.getEntries4Name(['MOUSE, MICKEY MDR'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, Mickey MDR'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_FullnameAllCaps_FirstnameTwocharAllCaps_withVowel(self):
+        input_entries = self.getEntries4Name(['MOUSE, AD'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, AD'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_FullnameAllCaps_FirstnameThreecharAllCaps_withVowel(self):
+        input_entries = self.getEntries4Name(['MOUSE, ADR'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, ADR'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_FullnameAllCaps_MiddlenameTwocharAllCaps_withVowel(self):
+        input_entries = self.getEntries4Name(['MOUSE, MICKEY AD'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, Mickey AD'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_FullnameAllCaps_MiddlenameThreecharAllCaps_withVowel(self):
+        input_entries = self.getEntries4Name(['MOUSE, MICKEY ADR'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, Mickey ADR'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_FirstnameAllCaps(self):
+        input_entries = self.getEntries4Name(['Mouse, MICKEY'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, Mickey'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_FirstnameTwocharAllCaps_noVowel(self):
+        input_entries = self.getEntries4Name(['Mouse, MD'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, MD'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_FirstnameThreecharAllCaps_noVowel(self):
+        input_entries = self.getEntries4Name(['Mouse, MDR'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, MDR'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_MiddlenameTwocharAllCaps_noVowel(self):
+        input_entries = self.getEntries4Name(['Mouse, Mickey MD'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, Mickey MD'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_MiddlenameThreecharAllCaps_noVowel(self):
+        input_entries = self.getEntries4Name(['Mouse, Mickey MDR'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, Mickey MDR'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_FirstnameTwocharAllCaps_withVowel(self):
+        input_entries = self.getEntries4Name(['Mouse, AD'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, AD'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_FirstnameThreecharAllCaps_withVowel(self):
+        input_entries = self.getEntries4Name(['Mouse, ADR'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, ADR'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_MiddlenameTwocharAllCaps_withVowel(self):
+        input_entries = self.getEntries4Name(['Mouse, Mickey AD'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, Mickey AD'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_MiddlenameThreecharAllCaps_withVowel(self):
+        input_entries = self.getEntries4Name(['Mouse, Mickey ADR'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, Mickey ADR'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_LastnameAllCaps(self):
+        input_entries = self.getEntries4Name(['MOUSE, Mickey'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['Mouse, Mickey'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_OrganisationAllCaps_Escaped(self):
+        input_entries = self.getEntries4Name(['{DOG Project}'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['{DOG Project}'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)
+
+    @expectedFailure
+    def test_fixNames_OrganisationAllCaps_notEscaped(self):
+        input_entries = self.getEntries4Name(['DOG Project'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name(['DOG Project'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEqual(xpect_entries, fixed_entries)

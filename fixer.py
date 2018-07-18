@@ -4,8 +4,10 @@ Fixes BibTeX entries.
 
 import re
 import argparse
+from collections import OrderedDict
 
-from aux import nanny
+from aux import nanny, biblib
+from aux.unicode2bibtex import unicode2bibtex, unicodeCombiningCharacter2bibtex
 
 __author__ = 'Marc Schulder'
 
@@ -113,7 +115,54 @@ class FixerSilentModeConfig(nanny.NannyConfig):
             return items
 
 
+class ChangeLogger:
+    def __init__(self):
+        self.currentKey = None
+        self.key2changes = OrderedDict()
+
+    def __str__(self):
+        lines = []
+        for key, changes in self.key2changes.items():
+            lines.append('Changes to entry {}'.format(key))
+            for info, original, changed in changes:
+                # info_line = '  {}:'.format(info)
+                # lines.append(info_line)
+                indent = ' ' * len(info)
+                lines.append('  {}: {}'.format(info, original))
+                lines.append('{} => {}'.format(indent, changed))
+        return '\n'.join(lines)
+
+    def containsChanges(self):
+        return len(self.key2changes) > 0
+
+    def setCurrentKey(self, key):
+        self.currentKey = key
+
+    def logNameObjectDiff(self, info, original, changed):
+        if original != changed:
+            self.addChange4CurrentEntry(info, getNamesString(original), getNamesString(changed))
+
+    def addChange(self, key, info, original, changed):
+        change = (info, original, changed)
+        changes = self.key2changes.setdefault(key, [])
+        changes.append(change)
+
+    def addChange4CurrentEntry(self, info, original, changed):
+        change = (info, original, changed)
+        changes = self.key2changes.setdefault(self.currentKey, [])
+        changes.append(change)
+
+
 def fixEntries(entries, config, show):
+    # Fix encoding #
+    # LaTeX to BibTex formatting
+    if config.latex2bibtex:
+        print(NOT_IMPLEMENTED_PATTERN.format("LaTeX to BibTex formatting"))
+
+    # Unicode to BibTex formatting
+    if config.unicode2bibtex:
+        print(NOT_IMPLEMENTED_PATTERN.format("unicode to BibTex formatting"))
+
     # Check for Duplicates #
     # Duplicate keys
     if config.duplicateKeys:
@@ -176,9 +225,15 @@ def fixEntries(entries, config, show):
     if config.inconsistentConferences:
         print(NOT_IMPLEMENTED_PATTERN.format("inconsistent names for conferences"))
 
-    # Ambiguous name initials formatting
+    # Ambiguous name formatting
     if config.ambiguousNames:
-        print(NOT_IMPLEMENTED_PATTERN.format("ambiguous name initials formatting"))
+        logger = ChangeLogger()
+        badNameEntries = fixNames(entries, logger)
+        if logger.containsChanges():
+            if show.ambiguousNames >= FixerSilentModeConfig.SUMMARY:
+                print(HEADLINE_PATTERN.format("Fixing names"))
+                print(logger)
+                print()
 
     # All-caps name formatting
     if config.ambiguousNames:
@@ -191,13 +246,13 @@ def fixEntries(entries, config, show):
         if show.inconsistentLocations >= FixerSilentModeConfig.SUMMARY:
             print(HEADLINE_PATTERN.format("Fixing incomplete location names"))
             # TODO: Also use information from other entries to expand this one
-        for key, entry in nanny.getEntriesWithField(entries, "address"):
-            address = entry['address']
+        for key, entry in nanny.getEntriesWithField(entries, nanny.FIELD_ADDRESS):
+            address = entry[nanny.FIELD_ADDRESS]
             location = nanny.Location(address, locationKnowledge)
             location.expandInformation()
             fixedAddress = location.getString()
             if fixedAddress != address:
-                entry['address'] = fixedAddress
+                entry[nanny.FIELD_ADDRESS] = fixedAddress
                 if show.inconsistentLocations >= FixerSilentModeConfig.SHOW:
                     print("Fixed address info for entry {}".format(entry.key))
                     print("  Before: {}".format(address))
@@ -261,6 +316,145 @@ def fixUnsecuredUppercase(text, unsecuredChars):
 def fixBadPageNumbers(pages):
     pages = RE_PAGES_RANGE.sub(r'\g<num1>--\g<num2>', pages)
     return pages
+
+
+def fixNames(entries, logger):
+    key2badEntries = OrderedDict()
+    for entry_key, entry in entries.items():
+        logger.setCurrentKey(entry_key)
+
+        isBadEntry = False
+        for field in nanny.PERSON_NAME_FIELDS:
+            if field in entry:
+                names = entry.authors(field)
+
+                # Check name formatting
+                names_string = getNamesString(names)
+                if names_string != entry.get(field):
+                    logger.addChange4CurrentEntry('BibTeX name format has changed', entry.get(field), names_string)
+
+                fixed_names = []
+                for name in names:
+                    if name.is_others():
+                        fixed_names.append(name)
+                    else:
+                        fixed_name = fixControlSequences(name, logger)
+                        fixed_name = fixNameInitials(fixed_name, logger)
+                        fixed_name = fixAllCapsNames(fixed_name, logger)
+                        fixed_names.append(fixed_name)
+
+                # Convert Name objects to multi-author string
+                names_string = getNamesString(fixed_names)
+                if names_string != entry.get(field):
+                    isBadEntry = True
+                    # print(names_string)
+                    entry[field] = names_string
+                    try:
+                        names_string.encode('ascii')
+                    except UnicodeEncodeError:
+                        print("Bad encoding: {}".format(names_string))
+        if isBadEntry:
+            key2badEntries[entry_key] = entry
+
+        # nanny.findAllCapsName(entries, 'author')
+    return key2badEntries
+
+
+def is_ascii(s):
+    return all(ord(c) < 128 for c in s)
+
+
+def getNamesString(names, template='{von} {last}, {jr}, {first}'):
+    if isinstance(names, biblib.algo.Name):
+        return names.pretty(template)
+    else:
+        return ' and '.join([name.pretty(template) for name in names])
+
+
+def fixControlSequences(name, logger):
+    name_dict = name._asdict()
+    for name_key, name_elem in name_dict.items():
+        if len(name_elem) > 0:
+            name_elem = convertLaTeX2BibTeX(name_elem)
+            name_elem = convertUnicode2BibTeX(name_elem)
+            name_dict[name_key] = name_elem
+    fixed_name = name._replace(**name_dict)
+    logger.logNameObjectDiff('Fixed control sequences', name, fixed_name)
+    return fixed_name
+
+
+def fixNameInitials(name, logger):
+    initialsRE = re.compile(r'(\w\.)+?')
+    name_dict = name._asdict()
+    rerun_fix = False
+    for name_key, name_elem in name_dict.items():
+        fixed_subelems = []
+        name_subelems = name_elem.split()
+        for i, name_subelem in enumerate(name_subelems):
+            if len(name_subelem) == 1:
+                fixed_subelem = '{}.'.format(name_subelem)
+            else:
+                fixed_subelem = initialsRE.sub(r'\1 ', name_subelem).strip()
+                if fixed_subelem != name_subelem:
+                    rerun_fix = True
+            fixed_subelems.append(fixed_subelem)
+        name_dict[name_key] = ' '.join(fixed_subelems)
+    fixed_name = name._replace(**name_dict)
+
+    if rerun_fix:
+        fixed_name = fixNameInitials(fixed_name, logger)
+    else:
+        logger.logNameObjectDiff('Fixed name initials', name, fixed_name)
+    return fixed_name
+
+
+def fixAllCapsNames(name, logger):
+    name_dict = name._asdict()
+    for name_key, name_elem in name_dict.items():
+        if len(name_elem) > 0:
+            name_subelems = name_elem.split(' ')
+            fixed_subelems = []
+            for i, name_subelem in enumerate(name_subelems):
+                if name_subelem.isupper():
+                    if len(name_subelem) <= 3:
+                        fixed_subelem = name_subelem
+                    else:
+                        fixed_subelem = name_subelem.capitalize()
+                else:
+                    fixed_subelem = name_subelem
+                fixed_subelems.append(fixed_subelem)
+            name_dict[name_key] = ' '.join(fixed_subelems)
+    fixed_name = name._replace(**name_dict)
+    logger.logNameObjectDiff('Fixed all-caps name (or part of name)', name, fixed_name)
+    return fixed_name
+
+
+def convertLaTeX2BibTeX(string):
+    string = nanny.fixTexInNameElement(string)
+    try:
+        string = biblib.algo.tex_to_unicode(string)
+    except biblib.messages.InputError as e:
+        pass
+    # todo: More Latex conversions
+    return convertUnicode2BibTeX(string)
+
+
+def convertUnicode2BibTeX(string):
+    unicode_chars = []
+    lastChar = None
+    for char in string:
+        if char in unicode2bibtex:
+            unicode_chars.append(unicode2bibtex[char])
+        # elif char in unicodeCombiningCharacter2bibtex:
+        #     pass
+        # elif lastChar in unicodeCombiningCharacter2bibtex:
+        #     combinedCharacter = unicodeCombiningCharacter2bibtex[lastChar].format(char)
+        #     unicode_chars.append(combinedCharacter)
+        #     print(lastChar, char, combinedCharacter)
+        else:
+            unicode_chars.append(char)
+        lastChar = char
+    return ''.join([unicode2bibtex.get(char, char) for char in string])
 
 
 def main():

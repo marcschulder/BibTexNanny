@@ -82,6 +82,8 @@ class NannyConfig(ABC):
     FALLBACK = None
 
     def __init__(self, filename=None, fallback=FALLBACK):
+        self.latex2bibtex = fallback
+        self.unicode2bibtex = fallback
         self.duplicateKeys = fallback
         self.duplicateTitles = fallback
         self.duplicateTitlesIgnoredTypes = []
@@ -93,6 +95,7 @@ class NannyConfig(ABC):
         self.inconsistentConferences = fallback
         self.incompleteNames = fallback
         self.ambiguousNames = fallback
+        self.allcapsNames = fallback
         self.inconsistentLocations = fallback
         self.inconsistentInferrableInfo = fallback
 
@@ -108,6 +111,8 @@ class NannyConfig(ABC):
 
     def setUpConfig(self, config):
         section = config[self.SECTION]
+        self.latex2bibtex = self._getConfigValue(section, 'LaTeX to BibTeX')
+        self.unicode2bibtex = self._getConfigValue(section, 'Unicode to BibTeX')
         self.duplicateKeys = self._getConfigValue(section, 'Duplicate Keys')
         self.duplicateTitles = self._getConfigValue(section, 'Duplicate Titles')
         self.duplicateTitlesIgnoredTypes = self._getConfigList(section, 'Ignore Entry Types for Duplicate Titles')
