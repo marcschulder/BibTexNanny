@@ -82,6 +82,7 @@ class NannyConfig(ABC):
     FALLBACK = None
 
     def __init__(self, filename=None, fallback=FALLBACK):
+        self.asciiKeys = fallback
         self.latex2unicode = fallback
         self.unicode2bibtex = fallback
         self.duplicateKeys = fallback
@@ -115,6 +116,7 @@ class NannyConfig(ABC):
         self.unicode2bibtex = self._getConfigValue(section, 'Unicode to BibTeX')
         self.duplicateKeys = self._getConfigValue(section, 'Duplicate Keys')
         self.duplicateTitles = self._getConfigValue(section, 'Duplicate Titles')
+        self.asciiKeys = self._getConfigValue(section, 'ASCII Keys')
         self.duplicateTitlesIgnoredTypes = self._getConfigList(section, 'Ignore Entry Types for Duplicate Titles')
         self.missingRequiredFields = self._getConfigValue(section, 'Missing Required Fields')
         self.missingOptionalFields = self._getConfigValue(section, 'Missing Optional Fields')

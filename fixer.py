@@ -4,6 +4,7 @@ Fixes BibTeX entries.
 
 import re
 import argparse
+import unicodedata
 from collections import OrderedDict, Counter
 
 from aux import nanny, biblib
@@ -243,6 +244,25 @@ def fixEntries(entries, config, show):
         print(NOT_IMPLEMENTED_PATTERN.format("duplicate titles"))
 
     # Bad Formatting #
+    # Replace non-ASCII chracters in key
+    if config.asciiKeys:
+        keyChanges = []
+        logger = ChangeLogger("Converting entry keys to be ASCII-compliant",
+                              verbosity=show.asciiKeys)
+        for entry_key, entry in entries.items():
+            logger.setCurrentKey(entry_key)
+            fixed_key = entry.key.replace('ß', 'ss')
+            fixed_key = unicodedata.normalize('NFKD', fixed_key).encode('ascii', 'ignore').decode('ascii')
+            if fixed_key != entry.key:
+
+                keyChanges.append((entry_key, fixed_key, entry))
+                logger.addChange4CurrentEntry('Fixed a non-ASCII key', entry.key, fixed_key)
+        for entry_key, fixed_key, entry in keyChanges:
+            entry.key = fixed_key
+            del entries[entry_key]
+            entries[fixed_key.lower()] = entry
+        logger.printLog()
+
     # Unsecured uppercase characters in titles
     if config.unsecuredTitleChars:
         logger = ChangeLogger("Securing uppercase characters in titles with curly braces",
