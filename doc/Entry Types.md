@@ -1,6 +1,6 @@
 # Entry Types
 
-	The following information is taken from the [Wikipedia BibTex article](https://en.wikipedia.org/wiki/BibTeX)
+_The following information is taken from the [Wikipedia BibTex article](https://en.wikipedia.org/wiki/BibTeX)._
 
 A BibTeX database can contain the following types of entries:
 
@@ -122,7 +122,7 @@ _Optional fields:_ type, number, address, month, note, key
 
 A document having an author and title, but not formally published.
 
-_Required fields: _author, title, note
+_Required fields:_ author, title, note
 
 _Optional fields:_ month, year, key
 

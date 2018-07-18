@@ -1,6 +1,6 @@
 # Field Types
 
-	The following information is taken from the [Wikipedia BibTex article](https://en.wikipedia.org/wiki/BibTeX)
+_The following information is taken from the [Wikipedia BibTex article](https://en.wikipedia.org/wiki/BibTeX)._
 
 A BibTeX entry can contain various types of fields. The following types are recognized by the default bibliography styles; some third-party styles may accept additional ones:
 
