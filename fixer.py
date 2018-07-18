@@ -253,12 +253,15 @@ def fixEntries(entries, config, show):
     # Bad Formatting #
     # Replace non-ASCII characters in key
     if config.asciiKeys:
+        badKeyCharRE = re.compile(r'[{},~#%\\]')
         keyChanges = []
         logger = ChangeLogger("Converting entry keys to be ASCII-compliant",
                               verbosity=show.asciiKeys)
         for entry_key, entry in entries.items():
             logger.setCurrentKey(entry_key)
-            fixed_key = entry.key.replace('ß', 'ss')
+            fixed_key = entry.key
+            fixed_key = badKeyCharRE.sub('', fixed_key)
+            fixed_key = fixed_key.replace('ß', 'ss')
             fixed_key = unicodedata.normalize('NFKD', fixed_key).encode('ascii', 'ignore').decode('ascii')
             if fixed_key != entry.key:
 
