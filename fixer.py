@@ -116,20 +116,25 @@ class FixerSilentModeConfig(nanny.NannyConfig):
 
 
 class ChangeLogger:
-    def __init__(self):
+    def __init__(self, headline=None, verbosity=None):
+        self.headline = headline
+        self.verbosity = verbosity
         self.currentKey = None
         self.key2changes = OrderedDict()
 
     def __str__(self):
         lines = []
+
+        if self.headline is not None:
+            lines.append(self.headline)
+
         for key, changes in self.key2changes.items():
             lines.append('Changes to entry {}'.format(key))
             for info, original, changed in changes:
-                # info_line = '  {}:'.format(info)
-                # lines.append(info_line)
                 indent = ' ' * len(info)
                 lines.append('  {}: {}'.format(info, original))
                 lines.append('{} => {}'.format(indent, changed))
+
         return '\n'.join(lines)
 
     def containsChanges(self):
@@ -151,6 +156,12 @@ class ChangeLogger:
         change = (info, original, changed)
         changes = self.key2changes.setdefault(self.currentKey, [])
         changes.append(change)
+
+    def printLog(self):
+        if self.containsChanges:
+            if self.verbosity >= FixerSilentModeConfig.SUMMARY:
+                print(self)
+                print()
 
 
 def fixEntries(entries, config, show):
@@ -227,13 +238,10 @@ def fixEntries(entries, config, show):
 
     # Ambiguous name formatting
     if config.ambiguousNames:
-        logger = ChangeLogger()
+        logger = ChangeLogger("Fixing names",
+                              verbosity=show.ambiguousNames)
         badNameEntries = fixNames(entries, logger)
-        if logger.containsChanges():
-            if show.ambiguousNames >= FixerSilentModeConfig.SUMMARY:
-                print(HEADLINE_PATTERN.format("Fixing names"))
-                print(logger)
-                print()
+        logger.printLog()
 
     # All-caps name formatting
     if config.ambiguousNames:
