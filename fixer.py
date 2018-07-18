@@ -534,8 +534,9 @@ def convertUnicode2BibTeX(string):
             unicode_chars.append(char)
         lastChar = char
 
+    # Clean up if final char was a combining character
     if lastChar in unicodeCombiningCharacter2bibtex:
-        combinedCharacter = unicodeCombiningCharacter2bibtex[lastChar].format('')
+        combinedCharacter = unicodeCombiningCharacter2bibtex[lastChar].format('{}')
         unicode_chars.append(combinedCharacter)
 
     return ''.join(unicode_chars)
