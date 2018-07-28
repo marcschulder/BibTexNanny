@@ -15,9 +15,7 @@ The following fixes and changes should be made to _biblib_:
 - [x] Add ability to handle duplicate keys
 - [ ] Prevent BibTex Parser from dropping metadata and comment lines
 	- [x] BibTexNanny internal work-around
-- **Tex-Unicode conversion**
-	- [ ] Add missing formatting options
-	- [ ] Add unicode2tex function
+- [ ] When names are parsed, curly braces need to be handled correctly
 
 
 # BibTex file consistency checker
@@ -36,6 +34,9 @@ The following fixes and changes should be made to _biblib_:
 			- [ ] Possibly paper and extended version of it as journal article.
 - [x] Warnings for **missing fields**
 	- [x] Optional warning for optional fields
+- [x] **Tex-Unicode conversion**
+	- [x] LaTeX to Unicode conversion
+	- [x] Unicode to BibTeX conversion
 - [ ] Warnings for **bad formatting**
 	- [ ] Warning for non-standard entry type
 	- [x] Warnings for non-secured capitalisation in name field
@@ -45,9 +46,9 @@ The following fixes and changes should be made to _biblib_:
 		- [ ] _What is the difference between single and double braces?_
 	- [x] Warnings for badly formatted in page numbers
 	- [ ] Find badly formatted names (author and editor fields)
-		- [ ] All-caps names
+		- [x] All-caps names
 		- [ ] Bad use of latex commands
-		- [ ] Missing spaces between initials
+		- [x] Missing spaces between initials
 	- [ ] Warning for all-caps texts
 	- [ ] Notice bad months
 	- [ ] Check if desired key format is followed (see _entry key format_)
@@ -84,6 +85,7 @@ The following fixes and changes should be made to _biblib_:
 		- [x] Extend state initials to full state name
 	- [ ] Have consistent file order
 - [ ] **Fix** **formatting**
+	- [ ] Replace non-ASCII characters in keys
 	- [x] Add wraps around capitalised characters in name field
 		- [ ] Add option to wrap entire words instead of only the capitalised characters
 	- [ ] Remove unnecessary {}-wraps
@@ -91,18 +93,23 @@ The following fixes and changes should be made to _biblib_:
 	- [ ] Fix all-caps text (but not single all caps words)
 		- [ ] Separate handling for names
 	- [ ] Fix bad but understandable **months** (e.g. numbers)
+	- [ ] Correct handling for **escaped sequences**
+			- [ ] Escaped by curly braces
+			- [ ] Escaped by math mode
 	- [ ] **Name** formatting
 		- [ ] Change format of name to non-ambiguous "Last, First" format
 		- [ ] Fix special character formatting
-			- [ ] Use consistent braces format (e.g. write `{\"o}` instead of  `\"{o}`)
+			- [x] Use consistent braces format (e.g. write `{\"o}` instead of  `\"{o}`)
 			- [ ] Replace latex commands (e.g. replace `\textasciicaron{}e` with `{e}`)
-		- [ ] Fix all-caps names (`MICKEY MOUSE` or `Mickey MOUSE`)
-		- [ ] Fix initials format
-			- [ ] Initials must be followed by a period
-			- [ ] Multiple initials must be separated by spaces
+		- [x] Fix all-caps names (`MICKEY MOUSE` or `Mickey MOUSE`)
+		- [x] Fix initials format
+			- [x] Initials must be followed by a period
+			- [x] Multiple initials must be separated by spaces
+		- [ ] Test if text starts with "and"
 - [ ] **Rename entry keys**
 	- [ ] Provide a format to specify the desired key names
 	- [ ] Key format might differ for different entry types.
+	- [ ] Key format should consist of only ASCII characters
 - [ ] **Multi-bibliography merger**
 	- [ ] Identify entries that are the same
 		- [ ] Option 1: Same key
