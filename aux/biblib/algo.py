@@ -237,8 +237,7 @@ class Name(collections.namedtuple('Name', 'first von last jr')):
         pieces = ['']
         first_field, last_field = 0, -1
         leading = trailing = ''
-        for i, (literal_text, field_name, format_spec, conv) in \
-            enumerate(f.parse(template)):
+        for i, (literal_text, field_name, format_spec, conv) in enumerate(f.parse(template)):
             if i == 0:
                 # Always keep leading text
                 leading = literal_text
