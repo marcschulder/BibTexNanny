@@ -427,32 +427,32 @@ class TestBadNames(TestCase):
         self.assertEqual(xpect_entries, fixed_entries)
 
     def test_fixNames_ControlSequenceBibTeX(self):
-        input_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}{\c c}key'], FIELD_AUTHOR)
+        input_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}{\c c}k{\.a}y'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEmpty(fixed_entries)
 
     def test_fixNames_ControlSequenceLaTeXBraces(self):
-        input_entries = self.getEntries4Name([r'M\u{o}\"{u}\v{s}e, M\'{i}\c{c}key'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}{\c c}key'], FIELD_AUTHOR)
+        input_entries = self.getEntries4Name([r'M\u{o}\"{u}\v{s}e, M\'{i}\c{c}k\.{a}y'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}{\c c}k{\.a}y'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEqual(xpect_entries, fixed_entries)
 
     @expectedFailure
     def test_fixNames_ControlSequenceLaTeXDirect(self):
-        input_entries = self.getEntries4Name([r'M\u o\"u\v se, M\'i\c ckey'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}{\c c}key'], FIELD_AUTHOR)
+        input_entries = self.getEntries4Name([r'M\u o\"u\v se, M\'i\c ck\.ay'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}{\c c}k{\.a}y'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEqual(xpect_entries, fixed_entries)
 
     def test_fixNames_ControlSequenceLaTeXEmptybraces(self):
-        input_entries = self.getEntries4Name([r'M\u{}ou\v{}se, Mi\c{}ckey'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name([r'M{\u o}u{\v s}e, Mi{\c c}key'], FIELD_AUTHOR)
+        input_entries = self.getEntries4Name([r'M\u{}ou\v{}se, Mi\c{}ck\.{}ay'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name([r'M{\u o}u{\v s}e, Mi{\c c}k{\.a}y'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEqual(xpect_entries, fixed_entries)
 
     def test_fixNames_ControlSequenceUnicode(self):
-        input_entries = self.getEntries4Name(['Mŏüše, Míçkey'], FIELD_AUTHOR)
-        xpect_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}{\c c}key'], FIELD_AUTHOR)
+        input_entries = self.getEntries4Name(['Mŏüše, Míçkȧy'], FIELD_AUTHOR)
+        xpect_entries = self.getEntries4Name([r'M{\u o}{\"u}{\v s}e, M{\'i}{\c c}k{\.a}y'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEqual(xpect_entries, fixed_entries)
 
@@ -545,6 +545,16 @@ class TestBadNames(TestCase):
         xpect_entries = self.getEntries4Name(['Mouse, M. D. R.'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEqual(xpect_entries, fixed_entries)
+
+    def test_fixNames_TwoInitialsSpaced_Escaped(self):
+        input_entries = self.getEntries4Name(['Mouse, {M. D.}'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEmpty(fixed_entries)
+
+    def test_fixNames_ThreeInitialsSpaced_Escaped(self):
+        input_entries = self.getEntries4Name(['Mouse, {M. D. R.}'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEmpty(fixed_entries)
 
     @expectedFailure
     def test_fixNames_ThreeUSDepartmentInitials(self):
@@ -691,5 +701,15 @@ class TestBadNames(TestCase):
     @expectedFailure
     def test_fixNames_OrganisationAllCaps_notEscaped(self):
         input_entries = self.getEntries4Name(['DOG Project'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEmpty(fixed_entries)
+
+    def test_fixNames_OrganisationWithComma_Escaped(self):
+        input_entries = self.getEntries4Name(['Wikipedia{,} the free encyclopedia'], FIELD_AUTHOR)
+        fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
+        self.assertEmpty(fixed_entries)
+
+    def test_fixNames_OrganisationWithComma_notEscaped(self):
+        input_entries = self.getEntries4Name(['Wikipedia, the free encyclopedia'], FIELD_AUTHOR)
         fixed_entries = fixer.fixNames(input_entries, fixer.ChangeLogger())
         self.assertEmpty(fixed_entries)
