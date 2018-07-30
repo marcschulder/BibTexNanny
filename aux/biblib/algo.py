@@ -91,6 +91,9 @@ class NameParser:
         return ([], toks)
 
     def parse(self, string, pos):
+        return self._parse(string, pos, tryingFix=False)
+
+    def _parse(self, string, pos, tryingFix):
         """Parse a BibTeX name list.
 
         Returns a list of Name objects.  Raises InputError if there is
@@ -106,6 +109,7 @@ class NameParser:
         # Process each name
         names = []
         for name_string in name_strings:
+            fix_names = False
             # Remove leading and trailing white space, ~, and -, and
             # trailing commas.
             name_string = name_trailing = name_string.lstrip('-~ \t')
@@ -137,6 +141,7 @@ class NameParser:
                 else:
                     # No von tokens.  Find hyphen-connected last name
                     # tokens.
+                    last_start = 0
                     for last_start in range(len(toks) - 1, -1, -2):
                         if last_start and toks[last_start-1] != '-':
                             break
@@ -152,11 +157,34 @@ class NameParser:
                 else:
                     first = parts[1]
             else:
-                pos.raise_error(
-                    'too many commas in name `{}\''.format(name_string))
+                if tryingFix:
+                    pos.raise_error('too many commas in name `{}\''.format(name_string))
+                else:
+                    fix_names = True
 
-            names.append(Name(''.join(first), ''.join(von),
-                              ''.join(last), ''.join(jr)))
+            if fix_names:
+                if len(parts[0]) == 1:
+                    fixed_names = []
+                    for p in range(len(parts)-1):
+                        last = parts[p][-1]
+                        if p+1 == len(parts)-1:
+                            first = ''.join(parts[p+1])
+                        else:
+                            first = ''.join(parts[p+1][:-1])
+                        fixed_name = '{}, {}'.format(last, first)
+                        fixed_names.append(fixed_name)
+                    fixed_names_string = ' and '.join(fixed_names)
+                else:
+                    fixed_names_string = name_string.replace(', ', ' and ')
+
+                pos.warn('Bad name format, tried to fix by converting from `{}\' to `{}\''.format(
+                    name_string, fixed_names_string))
+                fixed_names_objs = self._parse(fixed_names_string, pos, tryingFix=True)
+                names.extend(fixed_names_objs)
+
+            else:
+                names.append(Name(''.join(first), ''.join(von),
+                                  ''.join(last), ''.join(jr)))
         return names
 
 class Name(collections.namedtuple('Name', 'first von last jr')):

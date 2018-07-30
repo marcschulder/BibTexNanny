@@ -541,13 +541,17 @@ def findDuplicateTitles(entries, ignoredTypes=list(), ignoreCurlyBraces=True, ig
 
 def findAllCapsName(entries, field):
     entrykey2CapsNames = {}
+    recoverer = biblib.messages.InputErrorRecoverer()
     for key, entry in getEntriesWithField(entries, field):
-        authors = entry.authors(field)
-        for author in authors:
-            capsElems = findAllCapsNameElement(author, entry)
-            if len(capsElems) > 0:
-                capsNames = entrykey2CapsNames.setdefault(key, [])
-                capsNames.append(author)
+        with recoverer:
+            authors = entry.authors(field)
+
+            for author in authors:
+                capsElems = findAllCapsNameElement(author, entry)
+                if len(capsElems) > 0:
+                    capsNames = entrykey2CapsNames.setdefault(key, [])
+                    capsNames.append(author)
+    recoverer.reraise()
     return entrykey2CapsNames
 
 
