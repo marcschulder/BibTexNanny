@@ -562,7 +562,7 @@ def findAllCapsNameElement(nameObject, entry):
     # initialRE = re.compile(r'((?:{\\.\w})|\w)\.')
     multiSpaceRE = re.compile(r' +')
     escapedRE = re.compile(r'{.+}')
-    initialsRE = re.compile(r'(\w\.)+')
+    initialsRE = re.compile(r'(\w\.)([\-~]?\w\.)*')
     romanNumeralsRE = re.compile(r'[IVX]+')
 
     capsFields = []
