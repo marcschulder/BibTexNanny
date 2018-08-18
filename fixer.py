@@ -191,9 +191,7 @@ class ChangeLogger:
         changes.append(change)
 
     def addChange4CurrentEntry(self, info, original, changed):
-        change = (info, original, changed)
-        changes = self.key2changes.setdefault(self.currentKey, [])
-        changes.append(change)
+        self.addChange(self.currentKey, info, original, changed)
 
     def printLog(self):
         if self.containsChanges:
