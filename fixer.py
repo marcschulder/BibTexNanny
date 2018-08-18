@@ -318,9 +318,9 @@ def fixEntries(entries, config, show):
 
     # Ambiguous name formatting
     if config.ambiguousNames:
-        logger = ChangeLogger("Fixing names",
+        logger = ChangeLogger("Fixing BibTex author name formatting",
                               verbosity=show.ambiguousNames)
-        badNameEntries = fixNames(entries, logger, not config.latex2unicode, not config.unicode2bibtex)
+        badNameEntries = fixNameFormat(entries, logger, not config.latex2unicode, not config.unicode2bibtex)
         logger.printLog()
 
     # All-caps name formatting
@@ -393,7 +393,7 @@ def fixBadPageNumbers(pages):
     return pages
 
 
-def fixNames(entries, logger, fixLaTeX=True, fixUnicode=True):
+def fixNameFormat(entries, logger, fixLaTeX=True, fixUnicode=True):
     key2badEntries = OrderedDict()
     for entry_key, entry in entries.items():
         logger.setCurrentKey(entry_key)
@@ -531,7 +531,7 @@ def convertUnicode2BibTeX(string):
                 isMathMode = False
         else:
             if char == '$' and lastChar != '\\':  # Start of mathmode
-                print(c, string)
+                # print(c, string)
                 unicode_chars.append(char)
                 isMathMode = True
             elif char == '$' and lastChar == '\\':  # Special handling for escaped dollar sign
