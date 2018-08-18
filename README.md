@@ -36,11 +36,14 @@ The following fixes and changes should be made to _biblib_:
 	- [x] Optional warning for optional fields
 - [x] **Tex-Unicode conversion**
 	- [x] LaTeX to Unicode conversion
+		- [ ] Fix loosing curly braces
 	- [x] Unicode to BibTeX conversion
+		- [ ] Check if URLs require special handling
 - [ ] Warnings for **bad formatting**
 	- [ ] Warning for non-standard entry type
+	- [ ] Warning for fields whose value has no curly braces, but is not a known macro
 	- [x] Warnings for non-secured capitalisation in name field
-	- [ ] Warnings for unnecessary {}-wraps
+	- [ ] Warnings for unnecessary curly braces
 		- [ ] Curly braces are not only for uppercase characters but also for encoding special characters, e.g. `\'{e}` to get `é`
 		- [ ] Allow user preference for wrapping characters or whole words.
 		- [ ] _What is the difference between single and double braces?_
@@ -49,6 +52,7 @@ The following fixes and changes should be made to _biblib_:
 		- [x] All-caps names
 		- [ ] Bad use of latex commands
 		- [x] Missing spaces between initials
+		- [ ] Other bad formattings
 	- [ ] Warning for all-caps texts
 	- [ ] Notice bad months
 	- [ ] Check if desired key format is followed (see _entry key format_)
@@ -61,6 +65,8 @@ The following fixes and changes should be made to _biblib_:
 			- [x] Initial written without period (`Mickey D Mouse`)
 			- [x] Multiple initials written without whitespace (`Mickey A.B. Mouse`)
 			- [ ] Multiple initials written without periods or whitespace (`Mickey AD Mouse`)
+			- [ ] Warning when first names are only initials
+			- [ ] Warning when only some names of a paper are full and some have initials
 	- [ ] **Location** names
 		- [ ] Indicate when there is a country without a city
 		- [ ] Indicate when there is a city without a country
@@ -75,9 +81,14 @@ The following fixes and changes should be made to _biblib_:
 	- [x] _**Basic inference functionality**_
 	- [ ] Add more inferrable fields (see _Field Inference_)
 	- [ ] Add functionality for mapping information across types (e.g. from _proceeding_ to _inproceedings_)
+- [ ] **Infer full names**
+	- [x] Infer full name form of initials when the full name is used elsewhere
+	- [ ] Infer proper non-ASCII spelling of a name when is it used elsewhere
 - [ ] **Fix inconstistent fields**
 	- [ ] Replace **conference** name variations with main name (see _dictionary of conference names_)
 	- [ ] Expand **name initials** to full names
+		- [x] Infer full name form of initials when the full name is used elsewhere
+		- [ ] Infer proper non-ASCII spelling of a name when is it used elsewhere
 	- [ ] Make **locations** more informative (City, [State], Country)
 		- [ ] Add missing country
 		- [ ] Add missing city
@@ -85,7 +96,7 @@ The following fixes and changes should be made to _biblib_:
 		- [x] Extend state initials to full state name
 	- [ ] Have consistent file order
 - [ ] **Fix** **formatting**
-	- [ ] Replace non-ASCII characters in keys
+	- [x] Replace non-ASCII characters in keys
 	- [x] Add wraps around capitalised characters in name field
 		- [ ] Add option to wrap entire words instead of only the capitalised characters
 	- [ ] Remove unnecessary {}-wraps
@@ -97,10 +108,10 @@ The following fixes and changes should be made to _biblib_:
 			- [ ] Escaped by curly braces
 			- [ ] Escaped by math mode
 	- [ ] **Name** formatting
-		- [ ] Change format of name to non-ambiguous "Last, First" format
+		- [x] Change format of name to non-ambiguous "Last, First" format
 		- [ ] Fix special character formatting
 			- [x] Use consistent braces format (e.g. write `{\"o}` instead of  `\"{o}`)
-			- [ ] Replace latex commands (e.g. replace `\textasciicaron{}e` with `{e}`)
+			- [x] Replace latex commands (e.g. replace `\textasciicaron{}e` with `{e}`)
 		- [x] Fix all-caps names (`MICKEY MOUSE` or `Mickey MOUSE`)
 		- [x] Fix initials format
 			- [x] Initials must be followed by a period

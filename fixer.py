@@ -5,6 +5,7 @@ Fixes BibTeX entries.
 import re
 import argparse
 import unicodedata
+import itertools
 from collections import OrderedDict, Counter
 
 from aux import nanny, biblib
@@ -325,6 +326,13 @@ def fixEntries(entries, config, show):
     # if config.ambiguousNames:
     #     print(NOT_IMPLEMENTED_PATTERN.format("all-caps name formatting"))
 
+    # Incomplete name formatting
+    if config.incompleteNames:
+        logger = ChangeLogger("Completing incomplete names (initials to names, non-ASCII spellings)",
+                              verbosity=show.incompleteNames)
+        fixIncompleteNames(entries, logger)
+        logger.printLog()
+
     # Inconsistent location names
     if config.inconsistentLocations:
         logger = ChangeLogger("Fixing incomplete location names",
@@ -432,6 +440,127 @@ def fixNameFormat(entries, logger, fixLaTeX=True, fixUnicode=True):
 
         # nanny.findAllCapsName(entries, 'author')
     return key2badEntries
+
+
+def fixIncompleteNames(entries, logger):
+    # Expand initials to names
+    print('Expand initials to names')
+    initialRE = re.compile(r'(\w)\.?')
+
+    last2extnames = {}
+
+    allExtNames = ExtendedName.getExtendedNames(entries, logger)
+    for extName in allExtNames:
+        last2extnames.setdefault(extName.getSimilarityKey(), []).append(extName)
+
+    for last, extnames in last2extnames.items():
+        foundInitial = False
+        bestNames = []
+        for extname in extnames:
+            currentElems = extname.firsts
+            if len(bestNames) == 0:
+                bestNames.append(currentElems)
+            else:
+                for i, bestElems in enumerate(bestNames[:]):
+                    newBestElems = []
+                    is_mergeable = True
+                    for j, (currentElem, bestElem) in enumerate(itertools.zip_longest(currentElems, bestElems)):
+                        currentIsInitial = initialRE.fullmatch(currentElem)
+                        bestIsInitial = initialRE.fullmatch(bestElem)
+
+                        if currentIsInitial or bestIsInitial:
+                            foundInitial = True
+
+                        if not is_mergeable:
+                            newBestElems.append(bestElem)
+                        elif currentElem is None:
+                            newBestElems.append(bestElem)
+                        elif bestElem is None:
+                            newBestElems.append(currentElem)
+                        elif currentElem == bestElem:
+                            newBestElems.append(bestElem)
+                        elif currentIsInitial:
+                            newBestElems.append(bestElem)
+                        elif bestIsInitial:
+                            newBestElems.append(currentElem)
+                        else:
+                            newBestElems.append(bestElem)
+                            is_mergeable = False
+                    if is_mergeable:
+                        bestNames[i] = tuple(newBestElems)
+                    elif currentElems not in bestNames:
+                        bestNames.append(currentElems)
+
+        if len(bestNames) == 1:
+            for extname in extnames:
+
+                extname.fixFirstName(bestNames[0])
+        elif len(bestNames) > 1 and foundInitial:
+            prettyLastName = extnames[0].getPrettyLastName()
+            print("Fixing incomplete name: Could not disambiguate {} between {}".format(
+                "{}. {}".format(bestNames[0][0][0], prettyLastName),
+                ' and '.join(["{} {}".format(' '.join(bestElems), prettyLastName) for bestElems in bestNames])))
+
+
+class ExtendedName:
+    def __init__(self, name, entry, field, index, logger):
+        self.logger = logger
+        self.entry = entry
+        self.field = field
+        self.index = index
+
+        self.first = name.first
+        self.last = name.last
+        self.jr = name.jr
+        self.von = name.von
+
+        self.firsts = tuple(self.first.split())
+
+    def getSimilarityKey(self):
+        firstsInitials = tuple([f[0] for f in self.firsts])
+        return firstsInitials, self.von, self.last, self.jr
+
+    def isSimilar(self, extendedName):
+        return self.getSimilarityKey() == extendedName.getSimilarityKey()
+
+    def getNameObject(self):
+        return biblib.algo.Name(first=self.first, last=self.last, von=self.von, jr=self.jr)
+
+    def getPrettyLastName(self):
+        namestr = "{last}"
+        if self.von:
+            namestr = "{von} " + namestr
+        if self.von:
+            namestr = namestr + ", {jr}"
+        return namestr.format(last=self.last, von=self.von, jr=self.jr)
+
+    def fixFirstName(self, firsts):
+        if self.firsts != firsts:
+            self.firsts = firsts
+            self.first = ' '.join(firsts)
+            self.updateEntry()
+
+    def updateEntry(self):
+        names = self.entry.authors(self.field)
+        fixedname = names[self.index]
+        originalname = self.getNameObject()
+        names[self.index] = originalname
+
+        if fixedname != originalname:
+            self.entry[self.field] = getNamesString(names)
+            self.logger.addChange(self.entry.key, 'Fixed incomplete name', originalname.pretty(), fixedname.pretty())
+
+    @classmethod
+    def getExtendedNames(cls, entries, logger):
+        extendedNames = []
+        for entry_key, entry in entries.items():
+            for field in nanny.PERSON_NAME_FIELDS:
+                if field in entry:
+                    names = entry.authors(field)
+                    for n, name in enumerate(names):
+                        extName = ExtendedName(name, entry, field, n, logger)
+                        extendedNames.append(extName)
+        return extendedNames
 
 
 def is_ascii(s):
