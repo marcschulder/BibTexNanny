@@ -515,7 +515,9 @@ def findDuplicateKeys(entries):
     # return duplicates
 
 
-def findDuplicateTitles(entries, ignoredTypes=list(), ignoreCurlyBraces=True, ignoreCaps=True):
+def findDuplicateTitles(entries, ignoredTypes=None, ignoreCurlyBraces=True, ignoreCaps=True):
+    if ignoredTypes is None:
+        ignoredTypes = []
     title2seenEntries = {}
     for key, entry in getEntriesWithField(entries, FIELD_TITLE):
         if entry.typ in ignoredTypes:
