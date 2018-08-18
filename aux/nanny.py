@@ -160,6 +160,13 @@ class FieldInferrer:
     EventTuple = namedtuple('EventTuple', ('action', 'key', 'field', 'value', 'isRequiredField'))
     
     TYPE2INPUT2INFERRABLE = {
+        'article':
+            {('journal', 'year', 'volume'): ('month', ),
+             ('journal', 'year', 'month'): ('volume',)},
+        'conference':
+            {('booktitle', 'year'): ('address', 'month', 'editor', 'organization', 'publisher')},
+        'inbook':
+            {('title', 'year'): ('address', 'month', 'editor', 'publisher')},
         'incollection':
             {('booktitle', 'year'): ('address', 'month', 'editor', 'publisher')},
         'inproceedings':
