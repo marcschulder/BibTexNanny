@@ -533,7 +533,7 @@ class TeXToUnicode(TeXProcessor):
             if arg is None:
                 return cs
             else:
-                print('****', arg)
+            #     print('****', arg)
                 return cs + arg
         elif cs in self._SIMPLE:
             return self._SIMPLE[cs]

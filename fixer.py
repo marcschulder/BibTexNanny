@@ -223,17 +223,17 @@ def fixEntries(entries, config, show):
             logger.setCurrentKey(entry_key)
             for field, value in entry.items():
                 convertedValue = value
-                if '&' in value:
-                    print('@@@', convertedValue)
+                # if '&' in value:
+                #     print('@@@', convertedValue)
                 if config.latex2unicode:
                     convertedValue = convertLaTeX2Unicode(convertedValue)
-                    if '&' in value:
-                        print('###', convertedValue)
+                    # if '&' in value:
+                    #     print('###', convertedValue)
                 if config.unicode2bibtex:
                     convertedValue = convertUnicode2BibTeX(convertedValue)
-                    if '&' in value:
-                        print('$$$', convertedValue)
-                        print()
+                    # if '&' in value:
+                    #     print('$$$', convertedValue)
+                    #     print()
 
                 if convertedValue != value:
                     entry[field] = convertedValue
@@ -427,7 +427,8 @@ def fixNameFormat(entries, logger, fixLaTeX=True, fixUnicode=True):
                     try:
                         names_string.encode('ascii')
                     except UnicodeEncodeError:
-                        print("Bad encoding: {}".format(names_string))
+                        entry.pos.warn('Bad encoding in field "{}": {}'.format(field, names_string))
+                        # print('Bad encoding in field "{}": {}'.format(field, names_string))
         if isBadEntry:
             key2badEntries[entry_key] = entry
 
