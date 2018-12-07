@@ -542,9 +542,9 @@ class ExtendedName:
 
     def updateEntry(self):
         names = self.entry.authors(self.field)
-        fixedname = names[self.index]
-        originalname = self.getNameObject()
-        names[self.index] = originalname
+        originalname = names[self.index]
+        fixedname = self.getNameObject()
+        names[self.index] = fixedname
 
         if fixedname != originalname:
             self.entry[self.field] = getNamesString(names)
