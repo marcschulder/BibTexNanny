@@ -158,6 +158,10 @@ class FieldInferrer:
     ACTION_ADD = 'ADD'
     
     EventTuple = namedtuple('EventTuple', ('action', 'key', 'field', 'value', 'isRequiredField'))
+
+    # book: booktitle + year + volume / number = > inbook: author, editor, publisher, series, edition, month, publisher
+    # book: booktitle + year + volume / number = > incollection: editor, publisher, series, edition, month, publisher
+    # proceedings: booktitle + year = > inproceedings: address, month, editor, organization, publisher
     
     TYPE2INPUT2INFERRABLE = {
         'article':
@@ -171,6 +175,19 @@ class FieldInferrer:
             {('booktitle', 'year'): ('address', 'month', 'editor', 'publisher')},
         'inproceedings':
             {('booktitle', 'year'): ('address', 'month', 'editor', 'organization', 'publisher')},
+    }
+
+    TYPE2INPUT2TYPE2INFERRABLE = {
+        'book':
+            {('booktitle', 'year', 'volume'):
+                 {'inbook': ('author', 'editor', 'publisher', 'series', 'edition', 'month'),
+                  'incollection': ('editor', 'publisher', 'series', 'edition', 'month')},
+             ('booktitle', 'year', 'number'):
+                 {'inbook': ('author', 'editor', 'publisher', 'series', 'edition', 'month'),
+                  'incollection': ('editor', 'publisher', 'series', 'edition', 'month')}},
+        'proceedings':
+            {('booktitle', 'year'):
+                 {'inproceedings': ('address', 'editor', 'organization', 'month', 'publisher')}},
     }
 
     def __init__(self, entries):
