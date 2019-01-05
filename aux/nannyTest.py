@@ -60,6 +60,24 @@ class TestUnicode2BibTeX(TestCase):
         fixed_text = self.convert2bibtex(input_text)
         self.assertEqual(xpect_text, fixed_text)
 
+    def test_convertToBibTeX_EscapedAmpersand_withCurlyBraces(self):
+        input_text = r'Mickey {\&} Minnie'
+        xpect_text = r'Mickey {\&} Minnie'
+        fixed_text = self.convert2bibtex(input_text)
+        self.assertEqual(xpect_text, fixed_text)
+
+    def test_convertToBibTeX_EscapedAmpersand_withTooManyCurlyBraces(self):
+        input_text = r'Mickey {{\&}} Minnie'
+        xpect_text = r'Mickey {\&} Minnie'
+        fixed_text = self.convert2bibtex(input_text)
+        self.assertEqual(xpect_text, fixed_text)
+
+    def test_convertToBibTeX_EscapedAmpersand_withWayTooManyCurlyBraces(self):
+        input_text = r'Mickey {{\&}} Minnie'
+        xpect_text = r'Mickey {\&} Minnie'
+        fixed_text = self.convert2bibtex(input_text)
+        self.assertEqual(xpect_text, fixed_text)
+
     def test_convertToBibTeX_EscapedAmpersand_LaTeXCommandStandalone(self):
         input_text = r'Mickey & Minnie \textasciidieresis'
         xpect_text = r'Mickey {\&} Minnie {\"{}}'
