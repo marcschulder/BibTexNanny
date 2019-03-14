@@ -174,7 +174,8 @@ class FieldInferrer:
         'incollection':
             {('booktitle', 'year'): ('address', 'month', 'editor', 'publisher')},
         'inproceedings':
-            {('booktitle', 'year'): ('address', 'month', 'editor', 'organization', 'publisher')},
+            {('booktitle', 'year'): ('address', 'month', 'editor', 'organization', 'publisher'),
+             ('booktitle', ): ('publisher', )},
     }
 
     TYPE2INPUT2TYPE2INFERRABLE = {
