@@ -468,7 +468,7 @@ def loadCitedKeys(filename, lowercaseKeys=False):
 
 
 def filterEntries(key2entry, keyWhitelist):
-    keyWhitelist = set(keyWhitelist)
+    keyWhitelist = {k.lower() for k in keyWhitelist}
     filteredEntries = OrderedDict()
 
     for key, entry in key2entry.items():

@@ -699,10 +699,11 @@ def main():
     entries, preamble = nanny.loadBibTex(args.input, loadPreamble=True)
 
     # Load auxiliary file
-    all_entries = entries
     if args.aux:
         keyWhitelist = nanny.loadCitedKeys(args.aux)
+        all_entries = entries
         entries = nanny.filterEntries(entries, keyWhitelist)
+        print('Used aux file to select {} entries from a total of {}.'.format(len(entries), len(all_entries)))
 
     # Load config file
     config = FixerConfig(args.config)
@@ -712,7 +713,7 @@ def main():
     fixEntries(entries, config, silentconfig)
 
     # Save fixed BibTex file
-    nanny.saveBibTex(args.output, all_entries, preamble,
+    nanny.saveBibTex(args.output, entries, preamble,
                      month_to_macro=True, wrap_width=None, bibdesk_compatible=True)
 
 
