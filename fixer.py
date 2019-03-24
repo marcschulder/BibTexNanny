@@ -373,6 +373,20 @@ def fixEntries(entries, config, show):
         # if config.missingOptionalFields:
         #     print(NOT_IMPLEMENTED_PATTERN.format("missing optional fields"))
 
+    # Remove conference acronyms
+    if config.removeConferenceAcronyms:
+        logger = ChangeLogger("Removing conference acronyms at the end of proceedings title",
+                              verbosity=show.removeConferenceAcronyms)
+        for key, entry in nanny.getEntriesWithField(entries, nanny.FIELD_BOOKTITLE):
+            logger.setCurrentKey(key)
+            booktitle = entry[nanny.FIELD_BOOKTITLE]
+            print(entry.typ)
+            fixedBooktitle = removeConferenceAcronyms(booktitle)
+            if fixedBooktitle != booktitle:
+                entry[nanny.FIELD_BOOKTITLE] = fixedBooktitle
+                logger.addChange4CurrentEntry('Removed conference acronym', booktitle, fixedBooktitle)
+        logger.printLog()
+
 
 def fixUnsecuredUppercase(text, unsecuredChars):
     unsecuredChars = set(unsecuredChars)
@@ -635,6 +649,37 @@ def fixAllCapsNames(name, logger):
     fixed_name = name._replace(**name_dict)
     logger.logNameObjectDiff('Fixed all-caps name (or part of name)', name, fixed_name)
     return fixed_name
+
+
+def removeConferenceAcronyms(booktitle):
+    """
+    Removes acronyms from end of proceedings title
+    Example: "Proceedings of the Conference of Examples (COE)" -> "Proceedings of the Conference of Examples"
+    :param booktitle:
+    :return:
+    """
+    RE_CONFERENCE_BOOKTITLE = re.compile(r"(Proceedings of (?:the ))?(.*?)(?: \((.+?)\))?")
+    match = RE_CONFERENCE_BOOKTITLE.fullmatch(booktitle)
+    if match:
+        proceedings, conference, acronym = match.groups()
+        if proceedings is None:
+            print(booktitle)
+            proceedings = ''
+
+        # print('+++++++++++++++++++')
+        # print(booktitle)
+        # print(proceedings)
+        # print(conference)
+        # print(acronym)
+        # print('+++++++++++++++++++')
+
+
+        new_booktitle = proceedings+conference
+        return new_booktitle
+    else:
+        return booktitle
+
+
 
 
 def convertLaTeX2Unicode(string):

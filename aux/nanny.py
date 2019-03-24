@@ -19,6 +19,7 @@ FIELD_EDITOR = 'editor'
 FIELD_PAGES = 'pages'
 FIELD_PUBLISHER = 'publisher'
 FIELD_TITLE = 'title'
+FIELD_BOOKTITLE = 'booktitle'
 
 NAME_FIELDS = [FIELD_AUTHOR, FIELD_EDITOR, FIELD_PUBLISHER]
 PERSON_NAME_FIELDS = [FIELD_AUTHOR, FIELD_EDITOR]  # List of names without "publisher", which is often an organisation
@@ -99,6 +100,7 @@ class NannyConfig(ABC):
         self.allcapsNames = fallback
         self.inconsistentLocations = fallback
         self.inconsistentInferrableInfo = fallback
+        self.removeConferenceAcronyms = fallback
 
         self._setAnyMissingFieldsValue()
 
@@ -129,6 +131,7 @@ class NannyConfig(ABC):
         self.allcapsNames = self._getConfigValue(section, 'All-Caps Names')
         self.inconsistentLocations = self._getConfigValue(section, 'Inconsistent Locations')
         self.inconsistentInferrableInfo = self._getConfigValue(section, 'Inconsistent Inferrable Information')
+        self.removeConferenceAcronyms = self._getConfigValue(section, 'Remove Conference Acronyms')
 
         self._setAnyMissingFieldsValue()
 
