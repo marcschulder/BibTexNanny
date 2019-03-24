@@ -102,7 +102,7 @@ class NannyConfig(ABC):
         self.inconsistentInferrableInfo = fallback
         self.removeConferenceAcronyms = fallback
 
-        self._setAnyMissingFieldsValue()
+        self.anyMissingFields = self._getAnyMissingFieldsValue()
 
         if filename is not None:
             self.load(filename)
@@ -133,9 +133,9 @@ class NannyConfig(ABC):
         self.inconsistentInferrableInfo = self._getConfigValue(section, 'Inconsistent Inferrable Information')
         self.removeConferenceAcronyms = self._getConfigValue(section, 'Remove Conference Acronyms')
 
-        self._setAnyMissingFieldsValue()
+        self.anyMissingFields = self._getAnyMissingFieldsValue()
 
-    def _setAnyMissingFieldsValue(self):
+    def _getAnyMissingFieldsValue(self):
         if self.missingRequiredFields is None:
             if self.missingOptionalFields is None:
                 return None
@@ -145,7 +145,7 @@ class NannyConfig(ABC):
             if self.missingOptionalFields is None:
                 return self.missingRequiredFields
             else:
-                self.anyMissingFields = max(self.missingRequiredFields, self.missingOptionalFields)
+                return max(self.missingRequiredFields, self.missingOptionalFields)
 
     @abstractmethod
     def _getConfigValue(self, section, key, fallback=FALLBACK):
